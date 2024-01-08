@@ -1,4 +1,5 @@
 pub use pecs_macros::Component;
+
 use std::any::TypeId;
 
 pub trait Component: 'static {

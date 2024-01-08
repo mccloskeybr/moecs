@@ -108,23 +108,6 @@ impl EntityManager {
         println!("Entity deleted: {:?}.", entity_id);
     }
 
-    pub fn add_component_to_entity<T: 'static + Component>(
-        &mut self,
-        entity_id: u32,
-        component: T,
-    ) {
-        let component_id: TypeId = TypeId::of::<T>();
-        match self.entity_id_to_component_ids.get_mut(&entity_id) {
-            None => panic!("Entity: {:?} not registered!", entity_id),
-            Some(component_ids) => component_ids.insert(component_id),
-        };
-        let component_manager = self
-            .component_id_to_component_managers
-            .entry(component_id)
-            .or_insert(Box::new(ComponentManager::new()));
-        component_manager.register_entity(entity_id, Rc::new(RefCell::new(component)));
-    }
-
     get_components_from_entity!(get_component A);
     get_components_from_entity!(get_two_components A, B);
     get_components_from_entity!(get_three_components A, B, C);
