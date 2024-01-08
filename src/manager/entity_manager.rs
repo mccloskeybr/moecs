@@ -5,6 +5,7 @@ use std::rc::Rc;
 
 use crate::component::Component;
 use crate::manager::component_manager::ComponentManager;
+use crate::EntityBuilder;
 
 pub struct EntityManager {
     next_entity_id: u32,
@@ -72,11 +73,27 @@ impl EntityManager {
         }
     }
 
-    pub fn create_entity(&mut self) -> u32 {
+    pub fn create_entity(&mut self, entity_builder: &mut EntityBuilder) -> u32 {
         let entity_id = self.next_entity_id;
         self.next_entity_id += 1;
         self.entity_id_to_component_ids
             .insert(entity_id, HashSet::new());
+
+        entity_builder
+            .get_components()
+            .iter()
+            .for_each(|component| {
+                let component_id: TypeId = component.borrow().type_id();
+                self.entity_id_to_component_ids
+                    .get_mut(&entity_id)
+                    .map(|component_ids| component_ids.insert(component_id));
+                let component_manager = self
+                    .component_id_to_component_managers
+                    .entry(component_id)
+                    .or_insert(Box::new(ComponentManager::new()));
+                component_manager.register_entity(entity_id, component.clone());
+            });
+
         println!("Entity created: {:?}.", entity_id);
         entity_id
     }

@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use pecs::{Engine, Component, System};
 use pecs::manager::EntityManager;
+use pecs::{Component, Engine, EntityBuilder, System};
 
 #[derive(Component, Debug)]
 struct PositionComponent {
@@ -82,34 +82,22 @@ fn main() {
     engine.register_system(PhysicsSystem {});
     engine.register_system(KillCountdownSystem {});
 
-    {
-        let entity_id = engine.entity_manager().create_entity();
-        engine
-            .entity_manager()
-            .add_component_to_entity(entity_id, PositionComponent { x: 0, y: 0 });
-        engine
-            .entity_manager()
-            .add_component_to_entity(entity_id, VelocityComponent { x_vel: 2, y_vel: 1 });
-        engine.entity_manager().add_component_to_entity(
-            entity_id,
-            KillCountdownComponent {
+    engine.entity_manager().create_entity(
+        EntityBuilder::new()
+            .add_component(PositionComponent { x: 0, y: 0 })
+            .add_component(VelocityComponent { x_vel: 2, y_vel: 1 })
+            .add_component(KillCountdownComponent {
                 time_to_live_countdown: 3,
-            },
-        );
-    }
-    {
-        let entity_id = engine.entity_manager().create_entity();
-        engine
-            .entity_manager()
-            .add_component_to_entity(entity_id, PositionComponent { x: 0, y: 0 });
-        engine.entity_manager().add_component_to_entity(
-            entity_id,
-            VelocityComponent {
+            }),
+    );
+    engine.entity_manager().create_entity(
+        EntityBuilder::new()
+            .add_component(PositionComponent { x: 0, y: 0 })
+            .add_component(VelocityComponent {
                 x_vel: -1,
                 y_vel: -1,
-            },
-        );
-    }
+            }),
+    );
 
     for _ in 0..5 {
         engine.execute_systems();
