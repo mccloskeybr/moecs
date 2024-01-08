@@ -7,16 +7,11 @@ use crate::component::Component;
 use crate::manager::component_manager::ComponentManager;
 use crate::EntityBuilder;
 
+#[derive(Default)]
 pub struct EntityManager {
     next_entity_id: u32,
     entity_id_to_component_ids: HashMap<u32, HashSet<TypeId>>,
     component_id_to_component_managers: HashMap<TypeId, Box<ComponentManager<dyn Component>>>,
-}
-
-impl Default for EntityManager {
-    fn default() -> Self {
-        Self::new()
-    }
 }
 
 macro_rules! get_components_from_entity {
@@ -43,14 +38,6 @@ macro_rules! get_components_from_entity {
 }
 
 impl EntityManager {
-    pub fn new() -> Self {
-        EntityManager {
-            next_entity_id: 0,
-            entity_id_to_component_ids: HashMap::new(),
-            component_id_to_component_managers: HashMap::new(),
-        }
-    }
-
     pub fn create_entity(&mut self, entity_builder: &mut EntityBuilder) -> u32 {
         let entity_id = self.next_entity_id;
         self.next_entity_id += 1;
@@ -86,7 +73,7 @@ impl EntityManager {
         println!("Entity deleted: {:?}.", entity_id);
     }
 
-    pub fn filter (&self, query: &EntityQuery) -> Vec<u32> {
+    pub fn filter(&self, query: &EntityQuery) -> Vec<u32> {
         let mut matches: HashSet<u32> = self.entity_id_to_component_ids.keys().copied().collect();
         query.get_components().iter().for_each(|component_type_id| {
             matches = matches
@@ -94,9 +81,9 @@ impl EntityManager {
                     &self
                         .component_id_to_component_managers
                         .get(component_type_id)
-                        .map_or(HashSet::new(), |component_manager|
+                        .map_or(HashSet::new(), |component_manager| {
                             component_manager.get_all_registered_entities()
-                        ),
+                        }),
                 )
                 .copied()
                 .collect();
@@ -111,23 +98,12 @@ impl EntityManager {
     get_components_from_entity!(get_five_components A, B, C, D, E);
 }
 
+#[derive(Default)]
 pub struct EntityQuery {
     components: Vec<TypeId>,
 }
 
-impl Default for EntityQuery {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl EntityQuery {
-    pub fn new() -> Self {
-        EntityQuery {
-            components: Vec::new(),
-        }
-    }
-
     pub fn with_component<T: Component>(&mut self) -> &mut EntityQuery {
         self.components.push(TypeId::of::<T>());
         self

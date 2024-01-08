@@ -4,23 +4,12 @@ use std::collections::HashMap;
 use crate::manager::entity_manager::EntityManager;
 use crate::system::{System, SystemParamAccessor};
 
+#[derive(Default)]
 pub struct SystemManager {
     system_id_to_system: HashMap<TypeId, Box<dyn System>>,
 }
 
-impl Default for SystemManager {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl SystemManager {
-    pub fn new() -> Self {
-        SystemManager {
-            system_id_to_system: HashMap::new(),
-        }
-    }
-
     pub fn register_system<T: 'static + System>(&mut self, system: T) -> TypeId {
         let system_id = system.type_id();
         self.system_id_to_system

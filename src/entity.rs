@@ -3,23 +3,12 @@ use std::rc::Rc;
 
 use crate::Component;
 
+#[derive(Default)]
 pub struct EntityBuilder {
     components: Vec<Rc<RefCell<dyn Component>>>,
 }
 
-impl Default for EntityBuilder {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl EntityBuilder {
-    pub fn new() -> Self {
-        EntityBuilder {
-            components: Vec::new(),
-        }
-    }
-
     pub fn add_component<T: Component>(&mut self, component: T) -> &mut EntityBuilder {
         self.components.push(Rc::new(RefCell::new(component)));
         self

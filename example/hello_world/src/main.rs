@@ -38,7 +38,7 @@ impl System for PrintPositionSystem {
     fn execute(&self, entity_manager: &mut EntityManager, params: &SystemParamAccessor) {
         let to_bold = params.get_param::<EntitiesToBold>();
         entity_manager
-            .filter(EntityQuery::new().with_component::<PositionComponent>())
+            .filter(EntityQuery::default().with_component::<PositionComponent>())
             .iter()
             .for_each(|entity_id| {
                 let position = entity_manager.get_component::<PositionComponent>(entity_id);
@@ -61,7 +61,7 @@ impl System for PhysicsSystem {
     fn execute(&self, entity_manager: &mut EntityManager, params: &SystemParamAccessor) {
         entity_manager
             .filter(
-                EntityQuery::new()
+                EntityQuery::default()
                     .with_component::<PositionComponent>()
                     .with_component::<VelocityComponent>(),
             )
@@ -82,7 +82,7 @@ struct KillCountdownSystem {}
 impl System for KillCountdownSystem {
     fn execute(&self, entity_manager: &mut EntityManager, params: &SystemParamAccessor) {
         entity_manager
-            .filter(EntityQuery::new().with_component::<KillCountdownComponent>())
+            .filter(EntityQuery::default().with_component::<KillCountdownComponent>())
             .iter()
             .for_each(|entity_id| {
                 let kill_countdown =
@@ -104,7 +104,7 @@ fn main() {
     engine.register_system(KillCountdownSystem {});
 
     engine.create_entity(
-        EntityBuilder::new()
+        EntityBuilder::default()
             .add_component(PositionComponent { x: 0, y: 0 })
             .add_component(VelocityComponent { x_vel: 2, y_vel: 1 })
             .add_component(KillCountdownComponent {
@@ -112,7 +112,7 @@ fn main() {
             }),
     );
     engine.create_entity(
-        EntityBuilder::new()
+        EntityBuilder::default()
             .add_component(PositionComponent { x: 0, y: 0 })
             .add_component(VelocityComponent {
                 x_vel: -1,
@@ -122,7 +122,7 @@ fn main() {
 
     for i in 0..5 {
         engine.execute_all_systems(
-            SystemParamAccessor::new().add_param(EntitiesToBold { entities: vec![i] }),
+            SystemParamAccessor::default().add_param(EntitiesToBold { entities: vec![i] }),
         );
     }
 }

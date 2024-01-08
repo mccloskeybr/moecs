@@ -4,25 +4,13 @@ use crate::{EntityBuilder, System, SystemParamAccessor};
 use crate::manager::EntityManager;
 use crate::manager::SystemManager;
 
+#[derive(Default)]
 pub struct Engine {
     entity_manager: EntityManager,
     system_manager: SystemManager,
 }
 
-impl Default for Engine {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl Engine {
-    pub fn new() -> Self {
-        Engine {
-            entity_manager: EntityManager::default(),
-            system_manager: SystemManager::default(),
-        }
-    }
-
     pub fn create_entity(&mut self, entity_builder: &mut EntityBuilder) -> u32 {
         self.entity_manager.create_entity(entity_builder)
     }
