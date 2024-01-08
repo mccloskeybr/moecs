@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use pecs::manager::EntityManager;
+use pecs::manager::{EntityManager, EntityQuery};
 use pecs::{Component, Engine, EntityBuilder, System, SystemParam, SystemParamAccessor};
 
 #[derive(Component, Debug)]
@@ -38,7 +38,7 @@ impl System for PrintPositionSystem {
     fn execute(&self, entity_manager: &mut EntityManager, params: &SystemParamAccessor) {
         let to_bold = params.get_param::<EntitiesToBold>();
         entity_manager
-            .filter_component::<PositionComponent>()
+            .filter(EntityQuery::new().with_component::<PositionComponent>())
             .iter()
             .for_each(|entity_id| {
                 let position = entity_manager.get_component::<PositionComponent>(entity_id);
@@ -60,7 +60,11 @@ struct PhysicsSystem {}
 impl System for PhysicsSystem {
     fn execute(&self, entity_manager: &mut EntityManager, params: &SystemParamAccessor) {
         entity_manager
-            .filter_two_components::<PositionComponent, VelocityComponent>()
+            .filter(
+                EntityQuery::new()
+                    .with_component::<PositionComponent>()
+                    .with_component::<VelocityComponent>(),
+            )
             .iter()
             .for_each(|entity_id| {
                 let (position, velocity) = entity_manager
@@ -78,7 +82,7 @@ struct KillCountdownSystem {}
 impl System for KillCountdownSystem {
     fn execute(&self, entity_manager: &mut EntityManager, params: &SystemParamAccessor) {
         entity_manager
-            .filter_component::<KillCountdownComponent>()
+            .filter(EntityQuery::new().with_component::<KillCountdownComponent>())
             .iter()
             .for_each(|entity_id| {
                 let kill_countdown =

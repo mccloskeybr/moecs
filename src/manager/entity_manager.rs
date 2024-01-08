@@ -42,28 +42,6 @@ macro_rules! get_components_from_entity {
     };
 }
 
-macro_rules! filter_entities_with_components {
-    ( $name:ident $( $component:ident ),+ ) => {
-        pub fn $name<$($component: Component),+> (&self) -> Vec<u32> {
-            let mut matches: HashSet<u32> = self.entity_id_to_component_ids.keys().copied().collect();
-            $(
-                matches = matches
-                    .intersection(
-                        &self
-                            .component_id_to_component_managers
-                            .get(&TypeId::of::<$component>())
-                            .map_or(HashSet::new(), |component_manager|
-                                component_manager.get_all_registered_entities()
-                            ),
-                    )
-                    .copied()
-                    .collect();
-            )+
-            matches.iter().copied().collect()
-        }
-    };
-}
-
 impl EntityManager {
     pub fn new() -> Self {
         EntityManager {
@@ -108,15 +86,54 @@ impl EntityManager {
         println!("Entity deleted: {:?}.", entity_id);
     }
 
+    pub fn filter (&self, query: &EntityQuery) -> Vec<u32> {
+        let mut matches: HashSet<u32> = self.entity_id_to_component_ids.keys().copied().collect();
+        query.get_components().iter().for_each(|component_type_id| {
+            matches = matches
+                .intersection(
+                    &self
+                        .component_id_to_component_managers
+                        .get(component_type_id)
+                        .map_or(HashSet::new(), |component_manager|
+                            component_manager.get_all_registered_entities()
+                        ),
+                )
+                .copied()
+                .collect();
+        });
+        matches.iter().copied().collect()
+    }
+
     get_components_from_entity!(get_component A);
     get_components_from_entity!(get_two_components A, B);
     get_components_from_entity!(get_three_components A, B, C);
     get_components_from_entity!(get_four_components A, B, C, D);
     get_components_from_entity!(get_five_components A, B, C, D, E);
+}
 
-    filter_entities_with_components!(filter_component A);
-    filter_entities_with_components!(filter_two_components A, B);
-    filter_entities_with_components!(filter_three_components A, B, C);
-    filter_entities_with_components!(filter_four_components A, B, C, D);
-    filter_entities_with_components!(filter_five_components A, B, C, D, E);
+pub struct EntityQuery {
+    components: Vec<TypeId>,
+}
+
+impl Default for EntityQuery {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl EntityQuery {
+    pub fn new() -> Self {
+        EntityQuery {
+            components: Vec::new(),
+        }
+    }
+
+    pub fn with_component<T: Component>(&mut self) -> &mut EntityQuery {
+        self.components.push(TypeId::of::<T>());
+        self
+    }
+
+    pub fn get_components(&self) -> &Vec<TypeId> {
+        &self.components
+    }
 }
