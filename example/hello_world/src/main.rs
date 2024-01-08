@@ -1,26 +1,22 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use pecs::component::Component;
-use pecs::engine::Engine;
-use pecs::manager::entity_manager::EntityManager;
-use pecs::system::System;
+use pecs::{Engine, Component, System};
+use pecs::manager::EntityManager;
 
-#[derive(Debug)]
+#[derive(Component, Debug)]
 struct PositionComponent {
     x: i32,
     y: i32,
 }
-impl Component for PositionComponent {}
 
-#[derive(Debug)]
+#[derive(Component, Debug)]
 struct VelocityComponent {
     x_vel: i32,
     y_vel: i32,
 }
-impl Component for VelocityComponent {}
 
-#[derive(Debug)]
+#[derive(Component, Debug)]
 struct KillCountdownComponent {
     time_to_live_countdown: u32,
 }
@@ -33,7 +29,6 @@ impl KillCountdownComponent {
         self.time_to_live_countdown == 0
     }
 }
-impl Component for KillCountdownComponent {}
 
 struct PrintPositionSystem {}
 impl System for PrintPositionSystem {

@@ -1,3 +1,6 @@
-pub mod entity_manager;
-pub(crate) mod component_manager;
-pub(crate) mod system_manager;
+mod entity_manager;
+mod component_manager;
+mod system_manager;
+
+pub use self::entity_manager::*;
+pub(crate) use self::system_manager::*;

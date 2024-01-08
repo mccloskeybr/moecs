@@ -1,5 +1,3 @@
-#![allow(unused_macros)]
-
 use std::any::TypeId;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
@@ -98,7 +96,7 @@ impl EntityManager {
         entity_id: u32,
         component: T,
     ) {
-        let component_id: TypeId = component.type_id();
+        let component_id: TypeId = TypeId::of::<T>();
         match self.entity_id_to_component_ids.get_mut(&entity_id) {
             None => panic!("Entity: {:?} not registered!", entity_id),
             Some(component_ids) => component_ids.insert(component_id),

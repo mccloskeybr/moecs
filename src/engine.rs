@@ -1,6 +1,6 @@
-use crate::manager::entity_manager::EntityManager;
-use crate::manager::system_manager::SystemManager;
-use crate::system::System;
+use crate::manager::EntityManager;
+use crate::manager::SystemManager;
+use crate::System;
 
 pub struct Engine {
     entity_manager: EntityManager,
