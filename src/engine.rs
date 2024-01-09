@@ -23,14 +23,14 @@ impl Engine {
         self.system_manager.register_system(system)
     }
 
-    pub fn execute_systems(&mut self, system_ids: Vec<TypeId>, params: &SystemParamAccessor) {
+    pub fn execute_systems(&mut self, system_ids: &[TypeId], params: &SystemParamAccessor) {
         self.system_manager
             .execute(system_ids, &mut self.entity_manager, params)
     }
 
     pub fn execute_all_systems(&mut self, params: &SystemParamAccessor) {
         self.system_manager.execute(
-            self.system_manager.get_all_registered_system_ids(),
+            &self.system_manager.get_all_registered_system_ids(),
             &mut self.entity_manager,
             params,
         )

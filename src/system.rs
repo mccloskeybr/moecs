@@ -38,13 +38,13 @@ impl SystemParamAccessor {
         }
     }
 
-    pub fn add_param<T: SystemParam>(&mut self, param: T) -> &mut SystemParamAccessor {
+    pub fn add_param<T: 'static + SystemParam>(&mut self, param: T) -> &mut SystemParamAccessor {
         self.param_id_to_param
             .insert(TypeId::of::<T>(), Rc::new(RefCell::new(param)));
         self
     }
 
-    pub fn get_param<T: SystemParam>(&self) -> Option<Rc<RefCell<T>>> {
+    pub fn get_param<T: 'static + SystemParam>(&self) -> Option<Rc<RefCell<T>>> {
         self.param_id_to_param
             .get(&TypeId::of::<T>())
             .map(|param| unsafe { Rc::from_raw(Rc::into_raw(param.clone()) as *const RefCell<T>) })

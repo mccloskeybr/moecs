@@ -11,9 +11,9 @@ pub struct SystemManager {
 
 impl SystemManager {
     pub fn register_system<T: 'static + System>(&mut self, system: T) -> TypeId {
-        let system_id = system.type_id();
+        let system_id = TypeId::of::<T>();
         self.system_id_to_system
-            .insert(system.type_id(), Box::new(system));
+            .insert(system_id, Box::new(system));
         system_id
     }
 
@@ -23,7 +23,7 @@ impl SystemManager {
 
     pub fn execute(
         &self,
-        system_ids_to_execute: Vec<TypeId>,
+        system_ids_to_execute: &[TypeId],
         entity_manager: &mut EntityManager,
         params: &SystemParamAccessor,
     ) {
