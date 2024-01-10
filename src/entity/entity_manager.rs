@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 
 use crate::component::{Component, ComponentManager};
-use crate::entity::EntityBuilder;
+use crate::entity::{EntityBuilder, Query};
 
 #[derive(Default)]
 pub struct EntityManager {
@@ -71,7 +71,7 @@ impl EntityManager {
         println!("Entity deleted: {:?}.", entity_id);
     }
 
-    pub fn filter(&self, query: &EntityQuery) -> Vec<u32> {
+    pub fn filter(&self, query: &Query) -> Vec<u32> {
         let mut matches: HashSet<u32> = self.entity_id_to_component_ids.keys().copied().collect();
         query.get_components().iter().for_each(|component_property_id| {
             matches = matches
@@ -96,18 +96,3 @@ impl EntityManager {
     get_components_from_entity!(get_five_components A, B, C, D, E);
 }
 
-#[derive(Default)]
-pub struct EntityQuery {
-    components: Vec<u64>,
-}
-
-impl EntityQuery {
-    pub fn with_component<T: 'static + Component>(&mut self) -> &mut EntityQuery {
-        self.components.push(T::property_id());
-        self
-    }
-
-    pub fn get_components(&self) -> &Vec<u64> {
-        &self.components
-    }
-}

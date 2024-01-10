@@ -5,7 +5,7 @@ use ggez::{Context, GameResult};
 
 use pecs::Engine;
 use pecs::component::Component;
-use pecs::entity::{EntityBuilder, EntityManager, EntityQuery};
+use pecs::entity::{EntityBuilder, EntityManager, Query};
 use pecs::system::{System, SystemParam, SystemParamAccessor};
 
 #[derive(Component)]
@@ -29,9 +29,9 @@ impl System for PhysicsSystem {
     fn execute(&self, entity_manager: &mut EntityManager, _params: &SystemParamAccessor) {
         entity_manager
             .filter(
-                EntityQuery::default()
-                    .with_component::<PositionComponent>()
-                    .with_component::<VelocityComponent>(),
+                Query::default()
+                    .with::<PositionComponent>()
+                    .with::<VelocityComponent>(),
             )
             .iter()
             .for_each(|entity_id| {
@@ -60,9 +60,9 @@ impl System for RenderSystem {
 
         entity_manager
             .filter(
-                EntityQuery::default()
-                    .with_component::<PositionComponent>()
-                    .with_component::<DrawComponent>(),
+                Query::default()
+                    .with::<PositionComponent>()
+                    .with::<DrawComponent>(),
             )
             .iter()
             .for_each(|entity_id| {
