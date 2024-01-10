@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::Component;
+use crate::component::Component;
 
 #[derive(Default)]
 pub struct EntityBuilder {

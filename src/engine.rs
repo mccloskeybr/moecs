@@ -1,6 +1,5 @@
-use crate::{EntityBuilder, System, SystemParamAccessor};
-use crate::manager::EntityManager;
-use crate::manager::SystemManager;
+use crate::entity::{EntityBuilder, EntityManager};
+use crate::system::{System, SystemManager, SystemParamAccessor};
 
 #[derive(Default)]
 pub struct Engine {

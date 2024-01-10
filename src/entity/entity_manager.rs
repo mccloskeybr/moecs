@@ -2,9 +2,8 @@ use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 
-use crate::component::Component;
-use crate::manager::component_manager::ComponentManager;
-use crate::EntityBuilder;
+use crate::component::{Component, ComponentManager};
+use crate::entity::EntityBuilder;
 
 #[derive(Default)]
 pub struct EntityManager {

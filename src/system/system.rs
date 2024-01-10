@@ -5,7 +5,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::manager::EntityManager;
+use crate::entity::EntityManager;
 use crate::util::PropertyId;
 
 pub trait System: PropertyId {

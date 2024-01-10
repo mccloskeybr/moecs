@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::manager::entity_manager::EntityManager;
+use crate::entity::EntityManager;
 use crate::system::{System, SystemParamAccessor};
 
 #[derive(Default)]

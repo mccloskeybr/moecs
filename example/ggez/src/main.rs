@@ -4,10 +4,9 @@ use ggez::graphics;
 use ggez::{Context, GameResult};
 
 use pecs::Engine;
-use pecs::Component;
-use pecs::EntityBuilder;
-use pecs::{System, SystemParam, SystemParamAccessor};
-use pecs::manager::{EntityManager, EntityQuery};
+use pecs::component::Component;
+use pecs::entity::{EntityBuilder, EntityManager, EntityQuery};
+use pecs::system::{System, SystemParam, SystemParamAccessor};
 
 #[derive(Component)]
 struct PositionComponent {
