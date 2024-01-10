@@ -1,10 +1,10 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
+use pecs::Engine;
 use pecs::component::Component;
 use pecs::entity::{EntityBuilder, EntityManager, Query};
 use pecs::system::{System, SystemParamAccessor};
-use pecs::Engine;
 
 #[derive(Component, Debug)]
 struct PositionComponent {
