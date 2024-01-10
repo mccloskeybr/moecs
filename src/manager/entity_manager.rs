@@ -1,4 +1,3 @@
-use std::any::TypeId;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
@@ -10,8 +9,8 @@ use crate::EntityBuilder;
 #[derive(Default)]
 pub struct EntityManager {
     next_entity_id: u32,
-    entity_id_to_component_ids: HashMap<u32, HashSet<TypeId>>,
-    component_id_to_component_managers: HashMap<TypeId, Box<ComponentManager<dyn Component>>>,
+    entity_id_to_component_ids: HashMap<u32, HashSet<u64>>,
+    component_id_to_component_managers: HashMap<u64, Box<ComponentManager<dyn Component>>>,
 }
 
 macro_rules! get_components_from_entity {
@@ -24,7 +23,7 @@ macro_rules! get_components_from_entity {
         {
             ($(
                 self.component_id_to_component_managers
-                    .get(&TypeId::of::<$component>())
+                    .get(&$component::property_id())
                     .map(|component_manager| {
                         component_manager
                             .get_component_for_entity(entity_id)
@@ -38,7 +37,7 @@ macro_rules! get_components_from_entity {
 }
 
 impl EntityManager {
-    pub fn create_entity(&mut self, entity_builder: &mut EntityBuilder) -> u32 {
+    pub fn create_entity(&mut self, entity_builder: &EntityBuilder) -> u32 {
         let entity_id = self.next_entity_id;
         self.next_entity_id += 1;
         self.entity_id_to_component_ids
@@ -48,7 +47,7 @@ impl EntityManager {
             .get_components()
             .iter()
             .for_each(|component| {
-                let component_id: TypeId = component.borrow().type_id();
+                let component_id: u64 = component.borrow().self_property_id();
                 self.entity_id_to_component_ids
                     .get_mut(&entity_id)
                     .map(|component_ids| component_ids.insert(component_id));
@@ -75,12 +74,12 @@ impl EntityManager {
 
     pub fn filter(&self, query: &EntityQuery) -> Vec<u32> {
         let mut matches: HashSet<u32> = self.entity_id_to_component_ids.keys().copied().collect();
-        query.get_components().iter().for_each(|component_type_id| {
+        query.get_components().iter().for_each(|component_property_id| {
             matches = matches
                 .intersection(
                     &self
                         .component_id_to_component_managers
-                        .get(component_type_id)
+                        .get(component_property_id)
                         .map_or(HashSet::new(), |component_manager| {
                             component_manager.get_all_registered_entities()
                         }),
@@ -100,16 +99,16 @@ impl EntityManager {
 
 #[derive(Default)]
 pub struct EntityQuery {
-    components: Vec<TypeId>,
+    components: Vec<u64>,
 }
 
 impl EntityQuery {
-    pub fn with_component<T: Component>(&mut self) -> &mut EntityQuery {
-        self.components.push(TypeId::of::<T>());
+    pub fn with_component<T: 'static + Component>(&mut self) -> &mut EntityQuery {
+        self.components.push(T::property_id());
         self
     }
 
-    pub fn get_components(&self) -> &Vec<TypeId> {
+    pub fn get_components(&self) -> &Vec<u64> {
         &self.components
     }
 }

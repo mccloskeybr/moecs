@@ -1,52 +1,37 @@
+pub use pecs_macros::System;
 pub use pecs_macros::SystemParam;
 
-use std::any::TypeId;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::manager::EntityManager;
+use crate::util::PropertyId;
 
-pub trait System: 'static {
-    fn type_id(&self) -> TypeId {
-        TypeId::of::<Self>()
-    }
-
+pub trait System: PropertyId {
     fn execute(&self, entity_manager: &mut EntityManager, params: &SystemParamAccessor);
 }
 
-pub trait SystemParam: 'static {
-    fn type_id(&self) -> TypeId {
-        TypeId::of::<Self>()
-    }
+pub trait SystemParam: PropertyId {}
+
+#[derive(Default)]
+pub struct SystemParamAccessor<'a> {
+    param_id_to_param: HashMap<u64, Rc<RefCell<dyn 'a + SystemParam>>>,
 }
 
-pub struct SystemParamAccessor {
-    param_id_to_param: HashMap<TypeId, Rc<RefCell<dyn SystemParam>>>,
-}
-
-impl Default for SystemParamAccessor {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl SystemParamAccessor {
-    pub fn new() -> Self {
-        SystemParamAccessor {
-            param_id_to_param: HashMap::new(),
-        }
-    }
-
-    pub fn add_param<T: 'static + SystemParam>(&mut self, param: T) -> &mut SystemParamAccessor {
+impl<'a> SystemParamAccessor<'a> {
+    pub fn add_param<'b, T: 'a + SystemParam>(
+        &'b mut self,
+        param: T,
+    ) -> &'b mut SystemParamAccessor<'a> {
         self.param_id_to_param
-            .insert(TypeId::of::<T>(), Rc::new(RefCell::new(param)));
+            .insert(param.self_property_id(), Rc::new(RefCell::new(param)));
         self
     }
 
-    pub fn get_param<T: 'static + SystemParam>(&self) -> Option<Rc<RefCell<T>>> {
+    pub fn get_param<T: 'a + SystemParam>(&self) -> Option<Rc<RefCell<T>>> {
         self.param_id_to_param
-            .get(&TypeId::of::<T>())
+            .get(&T::property_id())
             .map(|param| unsafe { Rc::from_raw(Rc::into_raw(param.clone()) as *const RefCell<T>) })
     }
 }

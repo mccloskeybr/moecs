@@ -5,16 +5,16 @@ use crate::Component;
 
 #[derive(Default)]
 pub struct EntityBuilder {
-    components: Vec<Rc<RefCell<dyn Component>>>,
+    components: Vec<Rc<RefCell<dyn 'static + Component>>>,
 }
 
 impl EntityBuilder {
-    pub fn add_component<T: Component>(&mut self, component: T) -> &mut EntityBuilder {
+    pub fn add_component<T: 'static + Component>(&mut self, component: T) -> &mut EntityBuilder {
         self.components.push(Rc::new(RefCell::new(component)));
         self
     }
 
-    pub fn get_components(&self) -> &Vec<Rc<RefCell<dyn Component>>> {
+    pub fn get_components(&self) -> &Vec<Rc<RefCell<dyn 'static + Component>>> {
         &self.components
     }
 }

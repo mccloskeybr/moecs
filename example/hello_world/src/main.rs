@@ -1,8 +1,11 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
+use pecs::Engine;
+use pecs::Component;
+use pecs::EntityBuilder;
+use pecs::{System, SystemParam, SystemParamAccessor};
 use pecs::manager::{EntityManager, EntityQuery};
-use pecs::{Component, Engine, EntityBuilder, System, SystemParam, SystemParamAccessor};
 
 #[derive(Component, Debug)]
 struct PositionComponent {
@@ -33,6 +36,7 @@ impl KillCountdownComponent {
 struct EntitiesToBold {
     entities: Vec<u32>,
 }
+#[derive(System)]
 struct PrintPositionSystem {}
 impl System for PrintPositionSystem {
     fn execute(&self, entity_manager: &mut EntityManager, params: &SystemParamAccessor) {
@@ -56,6 +60,7 @@ impl System for PrintPositionSystem {
     }
 }
 
+#[derive(System)]
 struct PhysicsSystem {}
 impl System for PhysicsSystem {
     fn execute(&self, entity_manager: &mut EntityManager, params: &SystemParamAccessor) {
@@ -78,6 +83,7 @@ impl System for PhysicsSystem {
     }
 }
 
+#[derive(System)]
 struct KillCountdownSystem {}
 impl System for KillCountdownSystem {
     fn execute(&self, entity_manager: &mut EntityManager, params: &SystemParamAccessor) {

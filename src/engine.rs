@@ -1,5 +1,3 @@
-use std::any::TypeId;
-
 use crate::{EntityBuilder, System, SystemParamAccessor};
 use crate::manager::EntityManager;
 use crate::manager::SystemManager;
@@ -11,7 +9,7 @@ pub struct Engine {
 }
 
 impl Engine {
-    pub fn create_entity(&mut self, entity_builder: &mut EntityBuilder) -> u32 {
+    pub fn create_entity(&mut self, entity_builder: &EntityBuilder) -> u32 {
         self.entity_manager.create_entity(entity_builder)
     }
 
@@ -19,11 +17,11 @@ impl Engine {
         self.entity_manager.delete_entity(entity_id)
     }
 
-    pub fn register_system<T: 'static + System>(&mut self, system: T) -> TypeId {
+    pub fn register_system<T: 'static + System>(&mut self, system: T) -> u64 {
         self.system_manager.register_system(system)
     }
 
-    pub fn execute_systems(&mut self, system_ids: &[TypeId], params: &SystemParamAccessor) {
+    pub fn execute_systems(&mut self, system_ids: &[u64], params: &SystemParamAccessor) {
         self.system_manager
             .execute(system_ids, &mut self.entity_manager, params)
     }

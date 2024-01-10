@@ -1,9 +1,5 @@
 pub use pecs_macros::Component;
 
-use std::any::TypeId;
+use crate::util::PropertyId;
 
-pub trait Component: 'static {
-    fn type_id(&self) -> TypeId {
-        TypeId::of::<Self>()
-    }
-}
+pub trait Component: PropertyId {}

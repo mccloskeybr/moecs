@@ -1,14 +1,13 @@
-use std::any::TypeId;
-use std::cell::RefCell;
-use std::rc::Rc;
-
 use ggez::event;
 use ggez::glam::*;
 use ggez::graphics;
 use ggez::{Context, GameResult};
 
+use pecs::Engine;
+use pecs::Component;
+use pecs::EntityBuilder;
+use pecs::{System, SystemParam, SystemParamAccessor};
 use pecs::manager::{EntityManager, EntityQuery};
-use pecs::{Component, Engine, EntityBuilder, System, SystemParam, SystemParamAccessor};
 
 #[derive(Component)]
 struct PositionComponent {
@@ -25,6 +24,7 @@ struct VelocityComponent {
 #[derive(Component)]
 struct DrawComponent {}
 
+#[derive(System)]
 struct PhysicsSystem {}
 impl System for PhysicsSystem {
     fn execute(&self, entity_manager: &mut EntityManager, _params: &SystemParamAccessor) {
@@ -48,16 +48,16 @@ impl System for PhysicsSystem {
 }
 
 #[derive(SystemParam)]
-struct CanvasParam {
-    canvas: Rc<RefCell<Option<graphics::Canvas>>>,
+struct CanvasParam<'a> {
+    canvas: &'a mut graphics::Canvas,
 }
+#[derive(System)]
 struct RenderSystem {}
 impl System for RenderSystem {
     fn execute(&self, entity_manager: &mut EntityManager, params: &SystemParamAccessor) {
-        let mut canvas_param = params.get_param::<CanvasParam>();
-        let canvas_param = canvas_param.as_mut().unwrap();
-        let canvas = &canvas_param.borrow_mut().canvas;
-        let mut canvas = canvas.borrow_mut();
+        let canvas_param = params.get_param::<CanvasParam>().unwrap();
+        let canvas_param = &mut canvas_param.borrow_mut();
+        let canvas = &mut canvas_param.canvas;
 
         entity_manager
             .filter(
@@ -70,7 +70,7 @@ impl System for RenderSystem {
                 let position = entity_manager.get_component::<PositionComponent>(entity_id);
                 let position = position.unwrap();
 
-                canvas.as_mut().unwrap().draw(
+                canvas.draw(
                     &graphics::Quad,
                     graphics::DrawParam::new()
                         .dest_rect(graphics::Rect {
@@ -87,8 +87,8 @@ impl System for RenderSystem {
 
 struct GameState {
     engine: pecs::Engine,
-    logic_systems: Vec<TypeId>,
-    render_systems: Vec<TypeId>,
+    logic_systems: Vec<u64>,
+    render_systems: Vec<u64>,
 }
 
 impl GameState {
@@ -123,20 +123,19 @@ impl event::EventHandler<ggez::GameError> for GameState {
     }
 
     fn draw(&mut self, context: &mut Context) -> GameResult {
-        let canvas = Rc::new(RefCell::new(Some(graphics::Canvas::from_frame(
+        let mut canvas = graphics::Canvas::from_frame(
             context,
             graphics::Color::from([0.1, 0.2, 0.3, 1.0]),
-        ))));
+        );
 
         self.engine.execute_systems(
             &self.render_systems,
             SystemParamAccessor::default().add_param(CanvasParam {
-                canvas: canvas.clone(),
+                canvas: &mut canvas,
             }),
         );
 
-        let canvas = Rc::try_unwrap(canvas).unwrap();
-        canvas.take().unwrap().finish(context)?;
+        canvas.finish(context)?;
         Ok(())
     }
 }
