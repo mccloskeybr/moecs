@@ -11,25 +11,25 @@ pub struct SystemManager {
 impl SystemManager {
     pub fn register_system<T: 'static + System>(&mut self, system: T) -> u64 {
         let system_id = system.self_property_id();
-        self.system_id_to_system
-            .insert(system_id, Box::new(system));
+        if self.system_id_to_system.contains_key(&system_id) {
+            panic!("System {} already registered!", system_id);
+        }
+        self.system_id_to_system.insert(system_id, Box::new(system));
         system_id
     }
 
-    pub fn get_all_registered_system_ids(&self) -> Vec<u64> {
-        self.system_id_to_system.keys().copied().collect()
+    pub fn deregister_system(&mut self, system_property_id: &u64) {
+        self.system_id_to_system.remove(system_property_id);
     }
 
     pub fn execute(
         &self,
-        system_ids_to_execute: &[u64],
+        system_id: &u64,
         entity_manager: &mut EntityManager,
         params: &SystemParamAccessor,
     ) {
-        system_ids_to_execute.iter().for_each(|system_id| {
-            if let Some(system) = self.system_id_to_system.get(system_id) {
-                system.execute(entity_manager, params);
-            }
-        });
+        if let Some(system) = self.system_id_to_system.get(system_id) {
+            system.execute(entity_manager, params);
+        }
     }
 }

@@ -5,7 +5,7 @@ use ggez::{Context, GameResult};
 
 use pecs::Engine;
 use pecs::component::Component;
-use pecs::entity::{EntityBuilder, EntityManager, EntityQuery};
+use pecs::entity::{EntityBuilder, EntityManager, Query};
 use pecs::system::{System, SystemParam, SystemParamAccessor};
 
 #[derive(Component)]
@@ -24,14 +24,48 @@ struct VelocityComponent {
 struct DrawComponent {}
 
 #[derive(System)]
+struct CreateEntitiesSystem {}
+impl System for CreateEntitiesSystem {
+    fn execute(&self, entity_manager: &mut EntityManager, _params: &SystemParamAccessor) {
+        entity_manager.create_entity(
+            EntityBuilder::default()
+                .add_component(PositionComponent { x: 0.0, y: 0.0 })
+                .add_component(VelocityComponent {
+                    x_vel: 0.5,
+                    y_vel: 0.5,
+                })
+                .add_component(DrawComponent {}),
+        );
+        entity_manager.create_entity(
+            EntityBuilder::default()
+                .add_component(PositionComponent { x: 200.0, y: 50.0 })
+                .add_component(VelocityComponent {
+                    x_vel: -0.5,
+                    y_vel: 1.0,
+                })
+                .add_component(DrawComponent {}),
+        );
+        entity_manager.create_entity(
+            EntityBuilder::default()
+                .add_component(PositionComponent { x: 200.0, y: 200.0 })
+                .add_component(VelocityComponent {
+                    x_vel: -0.2,
+                    y_vel: -0.2,
+                })
+                .add_component(DrawComponent {}),
+        );
+    }
+}
+
+#[derive(System)]
 struct PhysicsSystem {}
 impl System for PhysicsSystem {
     fn execute(&self, entity_manager: &mut EntityManager, _params: &SystemParamAccessor) {
         entity_manager
             .filter(
-                EntityQuery::default()
-                    .with_component::<PositionComponent>()
-                    .with_component::<VelocityComponent>(),
+                Query::default()
+                    .with::<PositionComponent>()
+                    .with::<VelocityComponent>(),
             )
             .iter()
             .for_each(|entity_id| {
@@ -60,9 +94,9 @@ impl System for RenderSystem {
 
         entity_manager
             .filter(
-                EntityQuery::default()
-                    .with_component::<PositionComponent>()
-                    .with_component::<DrawComponent>(),
+                Query::default()
+                    .with::<PositionComponent>()
+                    .with::<DrawComponent>(),
             )
             .iter()
             .for_each(|entity_id| {
@@ -75,8 +109,8 @@ impl System for RenderSystem {
                         .dest_rect(graphics::Rect {
                             x: position.borrow().x,
                             y: position.borrow().y,
-                            w: 100.0,
-                            h: 100.0,
+                            w: 50.0,
+                            h: 50.0,
                         })
                         .color([0.0, 0.0, 0.0, 1.0]),
                 );
@@ -93,18 +127,13 @@ struct GameState {
 impl GameState {
     fn new() -> GameResult<GameState> {
         let mut engine = Engine::default();
+
+        let startup_systems = vec![engine.register_system(CreateEntitiesSystem {})];
+        engine.execute_systems(&startup_systems, &SystemParamAccessor::default());
+        engine.deregister_systems(&startup_systems);
+
         let logic_systems = vec![engine.register_system(PhysicsSystem {})];
         let render_systems = vec![engine.register_system(RenderSystem {})];
-
-        engine.create_entity(
-            EntityBuilder::default()
-                .add_component(PositionComponent { x: 0.0, y: 0.0 })
-                .add_component(VelocityComponent {
-                    x_vel: 0.5,
-                    y_vel: 0.5,
-                })
-                .add_component(DrawComponent {}),
-        );
 
         Ok(GameState {
             engine,
