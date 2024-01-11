@@ -14,7 +14,7 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
 
     TokenStream::from(quote! {
         impl #impl_generics Component for #name_literal #ty_generics #where_clause {}
-        impl #impl_generics ::pecs::util::PropertyId for #name_literal #ty_generics #where_clause {
+        impl #impl_generics ::moecs::util::PropertyId for #name_literal #ty_generics #where_clause {
             fn property_id() -> u64
             where Self: Sized {
                 use ::std::hash::{Hash, Hasher};
@@ -48,7 +48,7 @@ pub fn derive_system(input: TokenStream) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
 
     TokenStream::from(quote! {
-        impl #impl_generics ::pecs::util::PropertyId for #name_literal #ty_generics #where_clause {
+        impl #impl_generics ::moecs::util::PropertyId for #name_literal #ty_generics #where_clause {
             fn property_id() -> u64
             where Self: Sized {
                 use ::std::hash::{Hash, Hasher};
@@ -83,7 +83,7 @@ pub fn derive_system_param(input: TokenStream) -> TokenStream {
 
     TokenStream::from(quote! {
         impl #impl_generics SystemParam for #name_literal #ty_generics #where_clause {}
-        impl #impl_generics ::pecs::util::PropertyId for #name_literal #ty_generics #where_clause {
+        impl #impl_generics ::moecs::util::PropertyId for #name_literal #ty_generics #where_clause {
             fn property_id() -> u64
             where Self: Sized {
                 use ::std::hash::{Hash, Hasher};

@@ -1,4 +1,4 @@
-pub use pecs_macros::System;
+pub use moecs_macros::System;
 
 use crate::entity::EntityManager;
 use crate::system::SystemParamAccessor;

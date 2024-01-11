@@ -1,4 +1,4 @@
-pub use pecs_macros::Component;
+pub use moecs_macros::Component;
 
 use crate::util::PropertyId;
 

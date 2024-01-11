@@ -1,10 +1,10 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use pecs::component::Component;
-use pecs::entity::{EntityBuilder, EntityManager, Query};
-use pecs::system::{System, SystemParamAccessor};
-use pecs::Engine;
+use moecs::component::Component;
+use moecs::entity::{EntityBuilder, EntityManager, Query};
+use moecs::system::{System, SystemParamAccessor};
+use moecs::Engine;
 
 #[derive(Component, Debug)]
 struct PositionComponent {

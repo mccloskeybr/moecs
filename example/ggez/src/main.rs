@@ -3,10 +3,10 @@ use ggez::glam::*;
 use ggez::graphics;
 use ggez::{Context, GameResult};
 
-use pecs::component::Component;
-use pecs::entity::{EntityBuilder, EntityManager, Query};
-use pecs::system::{System, SystemParam, SystemParamAccessor};
-use pecs::Engine;
+use moecs::component::Component;
+use moecs::entity::{EntityBuilder, EntityManager, Query};
+use moecs::system::{System, SystemParam, SystemParamAccessor};
+use moecs::Engine;
 
 #[derive(Component)]
 struct PositionComponent {
@@ -111,7 +111,7 @@ impl System for RenderSystem {
 }
 
 struct GameState {
-    engine: pecs::Engine,
+    engine: moecs::Engine,
     logic_systems: Vec<u64>,
     render_systems: Vec<u64>,
 }
@@ -153,7 +153,7 @@ impl event::EventHandler<ggez::GameError> for GameState {
 }
 
 pub fn main() -> GameResult {
-    let cb = ggez::ContextBuilder::new("pecs_ggez_example", "mccloskeybr");
+    let cb = ggez::ContextBuilder::new("moecs_ggez_example", "mccloskeybr");
     let (ctx, event_loop) = cb.build()?;
     let state = GameState::new()?;
     event::run(ctx, event_loop, state)

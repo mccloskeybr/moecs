@@ -1,6 +1,6 @@
-# pecs
+# moecs
 
-`pecs` (_pico ECS_) is a small ECS library written in Rust.
+`moecs` (_micro ECS_) is a small ECS library written in Rust.
 
 Built to be used with lightweight Rust-based game engines, like [ggez](https://github.com/ggez/ggez).
 

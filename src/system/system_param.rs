@@ -1,4 +1,4 @@
-pub use pecs_macros::SystemParam;
+pub use moecs_macros::SystemParam;
 
 use std::cell::RefCell;
 use std::collections::HashMap;
