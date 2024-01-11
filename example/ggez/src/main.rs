@@ -3,10 +3,10 @@ use ggez::glam::*;
 use ggez::graphics;
 use ggez::{Context, GameResult};
 
-use pecs::Engine;
 use pecs::component::Component;
 use pecs::entity::{EntityBuilder, EntityManager, Query};
 use pecs::system::{System, SystemParam, SystemParamAccessor};
+use pecs::Engine;
 
 #[derive(Component)]
 struct PositionComponent {
@@ -24,9 +24,9 @@ struct VelocityComponent {
 struct DrawComponent {}
 
 #[derive(System)]
-struct CreateEntitiesSystem {}
+struct CreateEntitiesSystem;
 impl System for CreateEntitiesSystem {
-    fn execute(&self, entity_manager: &mut EntityManager, _params: &SystemParamAccessor) {
+    fn execute(entity_manager: &mut EntityManager, _params: &SystemParamAccessor) {
         entity_manager.create_entity(
             EntityBuilder::default()
                 .add_component(PositionComponent { x: 0.0, y: 0.0 })
@@ -47,7 +47,7 @@ impl System for CreateEntitiesSystem {
         );
         entity_manager.create_entity(
             EntityBuilder::default()
-                .add_component(PositionComponent { x: 200.0, y: 200.0 })
+                .add_component(PositionComponent { x: 175.0, y: 200.0 })
                 .add_component(VelocityComponent {
                     x_vel: -0.2,
                     y_vel: -0.2,
@@ -58,15 +58,11 @@ impl System for CreateEntitiesSystem {
 }
 
 #[derive(System)]
-struct PhysicsSystem {}
+struct PhysicsSystem;
 impl System for PhysicsSystem {
-    fn execute(&self, entity_manager: &mut EntityManager, _params: &SystemParamAccessor) {
+    fn execute(entity_manager: &mut EntityManager, _params: &SystemParamAccessor) {
         entity_manager
-            .filter(
-                Query::default()
-                    .with::<PositionComponent>()
-                    .with::<VelocityComponent>(),
-            )
+            .filter(Query::with::<PositionComponent>().and::<VelocityComponent>())
             .iter()
             .for_each(|entity_id| {
                 let (position, velocity) = entity_manager
@@ -85,19 +81,15 @@ struct CanvasParam<'a> {
     canvas: &'a mut graphics::Canvas,
 }
 #[derive(System)]
-struct RenderSystem {}
+struct RenderSystem;
 impl System for RenderSystem {
-    fn execute(&self, entity_manager: &mut EntityManager, params: &SystemParamAccessor) {
+    fn execute(entity_manager: &mut EntityManager, params: &SystemParamAccessor) {
         let canvas_param = params.get_param::<CanvasParam>().unwrap();
         let canvas_param = &mut canvas_param.borrow_mut();
         let canvas = &mut canvas_param.canvas;
 
         entity_manager
-            .filter(
-                Query::default()
-                    .with::<PositionComponent>()
-                    .with::<DrawComponent>(),
-            )
+            .filter(Query::with::<PositionComponent>().and::<DrawComponent>())
             .iter()
             .for_each(|entity_id| {
                 let position = entity_manager.get_component::<PositionComponent>(entity_id);
@@ -127,13 +119,9 @@ struct GameState {
 impl GameState {
     fn new() -> GameResult<GameState> {
         let mut engine = Engine::default();
-
-        let startup_systems = vec![engine.register_system(CreateEntitiesSystem {})];
-        engine.execute_systems(&startup_systems, &SystemParamAccessor::default());
-        engine.deregister_systems(&startup_systems);
-
-        let logic_systems = vec![engine.register_system(PhysicsSystem {})];
-        let render_systems = vec![engine.register_system(RenderSystem {})];
+        engine.execute_now::<CreateEntitiesSystem>(&SystemParamAccessor::default());
+        let logic_systems = vec![engine.register_system::<PhysicsSystem>()];
+        let render_systems = vec![engine.register_system::<RenderSystem>()];
 
         Ok(GameState {
             engine,
@@ -151,18 +139,14 @@ impl event::EventHandler<ggez::GameError> for GameState {
     }
 
     fn draw(&mut self, context: &mut Context) -> GameResult {
-        let mut canvas = graphics::Canvas::from_frame(
-            context,
-            graphics::Color::from([0.1, 0.2, 0.3, 1.0]),
-        );
-
+        let mut canvas =
+            graphics::Canvas::from_frame(context, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
         self.engine.execute_systems(
             &self.render_systems,
             SystemParamAccessor::default().add_param(CanvasParam {
                 canvas: &mut canvas,
             }),
         );
-
         canvas.finish(context)?;
         Ok(())
     }

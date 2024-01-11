@@ -13,17 +13,23 @@ impl Engine {
     }
 
     pub fn delete_entity(&mut self, entity_id: &u32) {
-        self.entity_manager.delete_entity(&entity_id)
+        self.entity_manager.delete_entity(entity_id)
     }
 
-    pub fn register_system<T: 'static + System>(&mut self, system: T) -> u64 {
-        self.system_manager.register_system(system)
+    pub fn execute_now<T: 'static + System>(&mut self, params: &SystemParamAccessor) {
+        let system_property_id = &T::property_id();
+        self.system_manager.register_system::<T>();
+        self.system_manager
+            .execute(system_property_id, &mut self.entity_manager, params);
+        self.system_manager.deregister_system::<T>();
     }
 
-    pub fn deregister_systems(&mut self, property_ids: &[u64]) {
-        property_ids
-            .iter()
-            .for_each(|property_id| self.system_manager.deregister_system(property_id));
+    pub fn register_system<T: 'static + System>(&mut self) -> u64 {
+        self.system_manager.register_system::<T>()
+    }
+
+    pub fn deregister_system<T: 'static + System>(&mut self) {
+        self.system_manager.deregister_system::<T>();
     }
 
     pub fn execute_systems(&mut self, system_ids: &[u64], params: &SystemParamAccessor) {
