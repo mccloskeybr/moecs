@@ -6,23 +6,27 @@ use crate::component::Component;
 
 #[derive(Default)]
 pub struct Query {
-    components: Vec<u64>,
+    with_components: Vec<u64>,
+    without_components: Vec<u64>,
 }
 
 impl Query {
-    pub fn with<T: 'static + Component>() -> Self {
-        Query {
-            components: vec![T::property_id()],
-        }
-    }
-
-    pub fn and<T: 'static + Component>(&mut self) -> &mut Query {
-        self.components.push(T::property_id());
+    pub fn with<T: 'static + Component>(&mut self) -> &mut Query {
+        self.with_components.push(T::property_id());
         self
     }
 
-    pub fn get_components(&self) -> &Vec<u64> {
-        &self.components
+    pub fn without<T: 'static + Component>(&mut self) -> &mut Query {
+        self.without_components.push(T::property_id());
+        self
+    }
+
+    pub(crate) fn get_with_components(&self) -> &Vec<u64> {
+        &self.with_components
+    }
+
+    pub(crate) fn get_without_components(&self) -> &Vec<u64> {
+        &self.without_components
     }
 }
 

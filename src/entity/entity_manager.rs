@@ -63,12 +63,12 @@ impl EntityManager {
     }
 
     pub fn filter(&self, query: &Query) -> Vec<QueryResult> {
-        let mut matches: HashSet<u32> = self.entity_id_to_component_ids.keys().copied().collect();
+        let mut entities: HashSet<u32> = self.entity_id_to_component_ids.keys().copied().collect();
         query
-            .get_components()
+            .get_with_components()
             .iter()
             .for_each(|component_property_id| {
-                matches = matches
+                entities = entities
                     .intersection(
                         &self
                             .component_id_to_component_managers
@@ -80,11 +80,25 @@ impl EntityManager {
                     .copied()
                     .collect();
             });
+        query
+            .get_without_components()
+            .iter()
+            .for_each(|component_property_id| {
+                self.component_id_to_component_managers
+                    .get(component_property_id)
+                    .map_or(HashSet::new(), |component_manager| {
+                        component_manager.get_all_registered_entities()
+                    })
+                    .iter()
+                    .for_each(|entity_id| {
+                        entities.remove(entity_id);
+                    });
+            });
 
         let mut results: Vec<QueryResult> = Vec::new();
-        matches.iter().for_each(|entity_id| {
+        entities.iter().for_each(|entity_id| {
             let mut result = QueryResult::new(*entity_id);
-            query.get_components().iter().for_each(|component_id| {
+            query.get_with_components().iter().for_each(|component_id| {
                 result.add_component(
                     self.component_id_to_component_managers
                         .get(component_id)

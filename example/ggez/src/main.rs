@@ -62,7 +62,7 @@ struct PhysicsSystem;
 impl System for PhysicsSystem {
     fn execute(entity_manager: &mut EntityManager, _params: &SystemParamAccessor) {
         entity_manager
-            .filter(Query::with::<PositionComponent>().and::<VelocityComponent>())
+            .filter(Query::default().with::<PositionComponent>().with::<VelocityComponent>())
             .iter()
             .for_each(|result| {
                 let position = result.get_component::<PositionComponent>().unwrap();
@@ -87,7 +87,7 @@ impl System for RenderSystem {
         let canvas = &mut canvas_param.canvas;
 
         entity_manager
-            .filter(Query::with::<PositionComponent>().and::<DrawComponent>())
+            .filter(Query::default().with::<PositionComponent>().with::<DrawComponent>())
             .iter()
             .for_each(|result| {
                 let position = result.get_component::<PositionComponent>().unwrap();

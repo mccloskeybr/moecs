@@ -23,7 +23,7 @@ struct PhysicsSystem;
 impl System for PhysicsSystem {
     fn execute(entity_manager: &mut EntityManager, params: &SystemParamAccessor) {
         entity_manager
-            .filter(Query::with::<PositionComponent>().and::<VelocityComponent>())
+            .filter(Query::default().with::<PositionComponent>().with::<VelocityComponent>())
             .iter()
             .for_each(|result| {
                 let position = result.get_component::<PositionComponent>().unwrap();
