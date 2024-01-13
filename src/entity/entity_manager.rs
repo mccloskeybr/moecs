@@ -1,4 +1,6 @@
+use rayon::prelude::*;
 use std::collections::{HashMap, HashSet};
+use std::sync::Mutex;
 
 use crate::component::{Component, ComponentManager};
 use crate::entity::{EntityBuilder, Query, QueryResult};
@@ -20,7 +22,7 @@ impl EntityManager {
             .get_components()
             .iter()
             .for_each(|component| {
-                let component_id: u64 = component.borrow().self_property_id();
+                let component_id: u64 = component.read().unwrap().self_property_id();
                 self.entity_id_to_component_ids
                     .get_mut(&entity_id)
                     .map(|component_ids| {
@@ -64,39 +66,33 @@ impl EntityManager {
 
     pub fn filter(&self, query: &Query) -> Vec<QueryResult> {
         let mut entities: HashSet<u32> = self.entity_id_to_component_ids.keys().copied().collect();
-        query
-            .get_with_components()
-            .iter()
-            .for_each(|component_property_id| {
-                entities = entities
-                    .intersection(
-                        &self
-                            .component_id_to_component_managers
-                            .get(component_property_id)
-                            .map_or(HashSet::new(), |component_manager| {
-                                component_manager.get_all_registered_entities()
-                            }),
-                    )
-                    .copied()
-                    .collect();
-            });
-        query
-            .get_without_components()
-            .iter()
-            .for_each(|component_property_id| {
-                self.component_id_to_component_managers
-                    .get(component_property_id)
-                    .map_or(HashSet::new(), |component_manager| {
-                        component_manager.get_all_registered_entities()
-                    })
-                    .iter()
-                    .for_each(|entity_id| {
-                        entities.remove(entity_id);
-                    });
-            });
+        entities = entities
+            .par_iter()
+            .filter(|entity_id| {
+                query.get_with_components().par_iter().all(|component_id| {
+                    self.entity_id_to_component_ids
+                        .get(entity_id)
+                        .map(|entity_component_ids| entity_component_ids.contains(component_id))
+                        .is_some()
+                })
+            })
+            .copied()
+            .collect();
+        entities = entities
+            .par_iter()
+            .filter(|entity_id| {
+                query.get_without_components().par_iter().all(|component_id| {
+                    self.entity_id_to_component_ids
+                        .get(entity_id)
+                        .map(|entity_component_ids| entity_component_ids.contains(component_id))
+                        .is_none()
+                })
+            })
+            .copied()
+            .collect();
 
-        let mut results: Vec<QueryResult> = Vec::new();
-        entities.iter().for_each(|entity_id| {
+        let results: Mutex<Vec<QueryResult>> = Mutex::new(Vec::new());
+        entities.par_iter().for_each(|entity_id| {
             let mut result = QueryResult::new(*entity_id);
             query.get_with_components().iter().for_each(|component_id| {
                 result.add_component(
@@ -107,8 +103,9 @@ impl EntityManager {
                         .unwrap(),
                 );
             });
-            results.push(result);
+            results.lock().unwrap().push(result);
         });
-        results
+        let results = results.lock().unwrap();
+        results.clone()
     }
 }

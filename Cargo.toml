@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 moecs_macros = { path = "macros" }
+rayon = "1.8.0"

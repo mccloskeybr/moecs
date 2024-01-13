@@ -1,6 +1,5 @@
-use std::cell::RefCell;
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::sync::{Arc, RwLock};
 
 use crate::component::Component;
 
@@ -30,9 +29,10 @@ impl Query {
     }
 }
 
+#[derive(Clone)]
 pub struct QueryResult {
     entity_id: u32,
-    component_id_to_component: HashMap<u64, Rc<RefCell<dyn Component>>>,
+    component_id_to_component: HashMap<u64, Arc<RwLock<dyn Component>>>,
 }
 
 impl QueryResult {
@@ -49,18 +49,20 @@ impl QueryResult {
 
     pub(crate) fn add_component(
         &mut self,
-        component: Rc<RefCell<dyn Component>>,
+        component: Arc<RwLock<dyn Component>>,
     ) -> &mut QueryResult {
-        self.component_id_to_component
-            .insert(component.borrow().self_property_id(), component.clone());
+        self.component_id_to_component.insert(
+            component.read().unwrap().self_property_id(),
+            component.clone(),
+        );
         self
     }
 
-    pub fn get_component<T: 'static + Component>(&self) -> Option<Rc<RefCell<T>>> {
+    pub fn get_component<T: 'static + Component>(&self) -> Option<Arc<RwLock<T>>> {
         self.component_id_to_component
             .get(&T::property_id())
             .map(|component| unsafe {
-                Rc::from_raw(Rc::into_raw(component.clone()) as *const RefCell<T>)
+                Arc::from_raw(Arc::into_raw(component.clone()) as *const RwLock<T>)
             })
     }
 }

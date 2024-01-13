@@ -1,20 +1,19 @@
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::sync::{Arc, RwLock};
 
 use crate::component::Component;
 
 #[derive(Default)]
 pub struct EntityBuilder {
-    components: Vec<Rc<RefCell<dyn 'static + Component>>>,
+    components: Vec<Arc<RwLock<dyn 'static + Component>>>,
 }
 
 impl EntityBuilder {
     pub fn add_component<T: 'static + Component>(&mut self, component: T) -> &mut EntityBuilder {
-        self.components.push(Rc::new(RefCell::new(component)));
+        self.components.push(Arc::new(RwLock::new(component)));
         self
     }
 
-    pub fn get_components(&self) -> &Vec<Rc<RefCell<dyn 'static + Component>>> {
+    pub fn get_components(&self) -> &Vec<Arc<RwLock<dyn 'static + Component>>> {
         &self.components
     }
 }

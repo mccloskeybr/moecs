@@ -29,8 +29,8 @@ impl System for PhysicsSystem {
                 let position = result.get_component::<PositionComponent>().unwrap();
                 let velocity = result.get_component::<VelocityComponent>().unwrap();
 
-                position.borrow_mut().x += velocity.borrow().x_vel;
-                position.borrow_mut().y += velocity.borrow().y_vel;
+                position.write().unwrap().x += velocity.read().unwrap().x_vel;
+                position.write().unwrap().y += velocity.read().unwrap().y_vel;
 
                 println!("Entity: {} has position: {:?}", result.entity_id(), position);
             });
