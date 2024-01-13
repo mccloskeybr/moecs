@@ -25,16 +25,14 @@ impl System for PhysicsSystem {
         entity_manager
             .filter(Query::with::<PositionComponent>().and::<VelocityComponent>())
             .iter()
-            .for_each(|entity_id| {
-                let (position, velocity) = entity_manager
-                    .get_two_components::<PositionComponent, VelocityComponent>(entity_id);
-                let position = position.unwrap();
-                let velocity = velocity.unwrap();
+            .for_each(|result| {
+                let position = result.get_component::<PositionComponent>().unwrap();
+                let velocity = result.get_component::<VelocityComponent>().unwrap();
 
                 position.borrow_mut().x += velocity.borrow().x_vel;
                 position.borrow_mut().y += velocity.borrow().y_vel;
 
-                println!("Entity: {} has position: {:?}", entity_id, position);
+                println!("Entity: {} has position: {:?}", result.entity_id(), position);
             });
     }
 }

@@ -1,38 +1,13 @@
-use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
-use std::rc::Rc;
 
 use crate::component::{Component, ComponentManager};
-use crate::entity::{EntityBuilder, Query};
+use crate::entity::{EntityBuilder, Query, QueryResult};
 
 #[derive(Default)]
 pub struct EntityManager {
     next_entity_id: u32,
     entity_id_to_component_ids: HashMap<u32, HashSet<u64>>,
     component_id_to_component_managers: HashMap<u64, Box<ComponentManager<dyn Component>>>,
-}
-
-macro_rules! get_components_from_entity {
-    ( $name:ident $( $component:ident ),+ ) => {
-        #[allow(unused_parens)]
-        pub fn $name<$($component: Component),+> (
-            &self,
-            entity_id: &u32,
-        ) -> ($(Option<Rc<RefCell<$component>>>),+)
-        {
-            ($(
-                self.component_id_to_component_managers
-                    .get(&$component::property_id())
-                    .map(|component_manager| {
-                        component_manager
-                            .get_component_for_entity(entity_id)
-                            .map(|component| unsafe {
-                                Rc::from_raw(Rc::into_raw(component) as *const RefCell<$component>)
-                            })
-                    }).unwrap_or(None)
-            ),+)
-        }
-    };
 }
 
 impl EntityManager {
@@ -87,7 +62,7 @@ impl EntityManager {
         }
     }
 
-    pub fn filter(&self, query: &Query) -> Vec<u32> {
+    pub fn filter(&self, query: &Query) -> Vec<QueryResult> {
         let mut matches: HashSet<u32> = self.entity_id_to_component_ids.keys().copied().collect();
         query
             .get_components()
@@ -105,12 +80,21 @@ impl EntityManager {
                     .copied()
                     .collect();
             });
-        matches.iter().copied().collect()
-    }
 
-    get_components_from_entity!(get_component A);
-    get_components_from_entity!(get_two_components A, B);
-    get_components_from_entity!(get_three_components A, B, C);
-    get_components_from_entity!(get_four_components A, B, C, D);
-    get_components_from_entity!(get_five_components A, B, C, D, E);
+        let mut results: Vec<QueryResult> = Vec::new();
+        matches.iter().for_each(|entity_id| {
+            let mut result = QueryResult::new(*entity_id);
+            query.get_components().iter().for_each(|component_id| {
+                result.add_component(
+                    self.component_id_to_component_managers
+                        .get(component_id)
+                        .unwrap()
+                        .get_component_for_entity(entity_id)
+                        .unwrap(),
+                );
+            });
+            results.push(result);
+        });
+        results
+    }
 }
