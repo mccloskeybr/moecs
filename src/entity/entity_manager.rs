@@ -73,7 +73,7 @@ impl EntityManager {
                     self.entity_id_to_component_ids
                         .get(entity_id)
                         .map(|entity_component_ids| entity_component_ids.contains(component_id))
-                        .is_some()
+                        .unwrap()
                 })
             })
             .copied()
@@ -82,10 +82,10 @@ impl EntityManager {
             .par_iter()
             .filter(|entity_id| {
                 query.get_without_components().par_iter().all(|component_id| {
-                    self.entity_id_to_component_ids
+                    !self.entity_id_to_component_ids
                         .get(entity_id)
                         .map(|entity_component_ids| entity_component_ids.contains(component_id))
-                        .is_none()
+                        .unwrap()
                 })
             })
             .copied()

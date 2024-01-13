@@ -10,9 +10,5 @@ See example implementations [here](./example).
 
 * Simple user-facing API.
 * Lightweight library.
-
-## Todo
-
-* Proper error handling for some edge cases
-* Parellelization
-* Testing
+* Basic parallelism via. `rayon`.
+* Defined `System` groups to provide control over when systems are run.
