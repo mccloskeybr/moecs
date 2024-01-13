@@ -1,41 +1,32 @@
-use crate::entity::{EntityBuilder, EntityManager};
-use crate::system::{System, SystemManager, SystemParamAccessor};
+use std::collections::HashMap;
+
+use crate::entity::EntityManager;
+use crate::system::{SystemManager, SystemGroup, SystemParamAccessor};
 
 #[derive(Default)]
 pub struct Engine {
     entity_manager: EntityManager,
     system_manager: SystemManager,
+    next_group_id: u32,
+    system_groups: HashMap<u32, SystemGroup>,
 }
 
 impl Engine {
-    pub fn create_entity(&mut self, entity_builder: &EntityBuilder) -> u32 {
-        self.entity_manager.create_entity(entity_builder)
+    pub fn register_system_group(&mut self, group: SystemGroup) -> u32 {
+        let group_id = self.next_group_id;
+        self.next_group_id += 1;
+        self.system_groups.insert(group_id, group);
+        group_id
     }
 
-    pub fn delete_entity(&mut self, entity_id: &u32) {
-        self.entity_manager.delete_entity(entity_id)
+    pub fn deregister_system_group(&mut self, group_id: u32) {
+        self.system_groups.remove(&group_id);
     }
 
-    pub fn execute_now<T: 'static + System>(&mut self, params: &SystemParamAccessor) {
-        let system_property_id = &T::property_id();
-        self.system_manager.register_system::<T>();
-        self.system_manager
-            .execute(system_property_id, &mut self.entity_manager, params);
-        self.system_manager.deregister_system::<T>();
-    }
-
-    pub fn register_system<T: 'static + System>(&mut self) -> u64 {
-        self.system_manager.register_system::<T>()
-    }
-
-    pub fn deregister_system<T: 'static + System>(&mut self) {
-        self.system_manager.deregister_system::<T>();
-    }
-
-    pub fn execute_systems(&mut self, system_ids: &[u64], params: &SystemParamAccessor) {
-        system_ids.iter().for_each(|system_id| {
-            self.system_manager
-                .execute(system_id, &mut self.entity_manager, params)
-        });
+    pub fn execute_group(&mut self, group_id: u32, params: &SystemParamAccessor) {
+        match self.system_groups.get(&group_id) {
+            None => panic!("System group with id: {} not registered!", group_id),
+            Some(group) => self.system_manager.execute_group(group, &mut self.entity_manager, params),
+        }
     }
 }

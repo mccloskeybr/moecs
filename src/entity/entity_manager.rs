@@ -71,7 +71,7 @@ impl EntityManager {
         self.component_id_to_component_managers
             .values_mut()
             .for_each(|component_manager| {
-                component_manager.deregister_entity(&entity_id);
+                component_manager.deregister_entity(entity_id);
             });
     }
 

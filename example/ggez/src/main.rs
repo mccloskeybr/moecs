@@ -5,7 +5,7 @@ use ggez::{Context, GameResult};
 
 use moecs::component::Component;
 use moecs::entity::{EntityBuilder, EntityManager, Query};
-use moecs::system::{System, SystemParam, SystemParamAccessor};
+use moecs::system::{System, SystemGroup, SystemParam, SystemParamAccessor};
 use moecs::Engine;
 
 #[derive(Component)]
@@ -112,16 +112,24 @@ impl System for RenderSystem {
 
 struct GameState {
     engine: moecs::Engine,
-    logic_systems: Vec<u64>,
-    render_systems: Vec<u64>,
+    logic_systems: u32,
+    render_systems: u32,
 }
 
 impl GameState {
     fn new() -> GameResult<GameState> {
         let mut engine = Engine::default();
-        engine.execute_now::<CreateEntitiesSystem>(&SystemParamAccessor::default());
-        let logic_systems = vec![engine.register_system::<PhysicsSystem>()];
-        let render_systems = vec![engine.register_system::<RenderSystem>()];
+        let startup_systems = engine.register_system_group(
+            SystemGroup::default()
+                .register::<CreateEntitiesSystem>()
+                .clone(),
+        );
+        engine.execute_group(startup_systems, &SystemParamAccessor::default());
+
+        let logic_systems = engine
+            .register_system_group(SystemGroup::default().register::<PhysicsSystem>().clone());
+        let render_systems =
+            engine.register_system_group(SystemGroup::default().register::<RenderSystem>().clone());
 
         Ok(GameState {
             engine,
@@ -134,15 +142,15 @@ impl GameState {
 impl event::EventHandler<ggez::GameError> for GameState {
     fn update(&mut self, _ctx: &mut Context) -> GameResult {
         self.engine
-            .execute_systems(&self.logic_systems, &SystemParamAccessor::default());
+            .execute_group(self.logic_systems, &SystemParamAccessor::default());
         Ok(())
     }
 
     fn draw(&mut self, context: &mut Context) -> GameResult {
         let mut canvas =
             graphics::Canvas::from_frame(context, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
-        self.engine.execute_systems(
-            &self.render_systems,
+        self.engine.execute_group(
+            self.render_systems,
             SystemParamAccessor::default().add_param(CanvasParam {
                 canvas: &mut canvas,
             }),

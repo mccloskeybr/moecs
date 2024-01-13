@@ -3,7 +3,7 @@
 
 use moecs::component::Component;
 use moecs::entity::{EntityBuilder, EntityManager, Query};
-use moecs::system::{System, SystemParamAccessor};
+use moecs::system::{System, SystemGroup, SystemParamAccessor};
 use moecs::Engine;
 
 #[derive(Component, Debug)]
@@ -61,9 +61,16 @@ impl System for CreateEntitiesSystem {
 
 fn main() {
     let mut engine = Engine::default();
-    engine.execute_now::<CreateEntitiesSystem>(&SystemParamAccessor::default());
-    let update_systems = vec![engine.register_system::<PhysicsSystem>()];
+    let startup_systems = engine.register_system_group(
+        SystemGroup::default()
+            .register::<CreateEntitiesSystem>()
+            .clone(),
+    );
+    engine.execute_group(startup_systems, &SystemParamAccessor::default());
+
+    let update_systems =
+        engine.register_system_group(SystemGroup::default().register::<PhysicsSystem>().clone());
     for i in 0..5 {
-        engine.execute_systems(&update_systems, &SystemParamAccessor::default());
+        engine.execute_group(update_systems, &SystemParamAccessor::default());
     }
 }
