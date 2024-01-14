@@ -2,6 +2,7 @@ use ggez::event;
 use ggez::glam::*;
 use ggez::graphics;
 use ggez::{Context, GameResult};
+use rand::Rng;
 use std::sync::{Arc, RwLock};
 
 use moecs::component::{Component, ComponentBundle};
@@ -28,33 +29,21 @@ struct DrawComponent {}
 struct CreateEntitiesSystem;
 impl System for CreateEntitiesSystem {
     fn execute(entity_manager: Arc<RwLock<EntityManager>>, _params: Arc<SystemParamAccessor>) {
-        entity_manager.write().unwrap().create_entity(
-            ComponentBundle::default()
-                .add_component(PositionComponent { x: 0.0, y: 0.0 })
-                .add_component(VelocityComponent {
-                    x_vel: 0.5,
-                    y_vel: 0.5,
-                })
-                .add_component(DrawComponent {}),
-        );
-        entity_manager.write().unwrap().create_entity(
-            ComponentBundle::default()
-                .add_component(PositionComponent { x: 200.0, y: 50.0 })
-                .add_component(VelocityComponent {
-                    x_vel: -0.5,
-                    y_vel: 1.0,
-                })
-                .add_component(DrawComponent {}),
-        );
-        entity_manager.write().unwrap().create_entity(
-            ComponentBundle::default()
-                .add_component(PositionComponent { x: 175.0, y: 200.0 })
-                .add_component(VelocityComponent {
-                    x_vel: -0.2,
-                    y_vel: -0.2,
-                })
-                .add_component(DrawComponent {}),
-        );
+        for _ in 0..1_000 {
+            let mut rng = rand::thread_rng();
+            entity_manager.write().unwrap().create_entity(
+                ComponentBundle::default()
+                    .add_component(PositionComponent {
+                        x: rng.gen::<f32>() * 800.0,
+                        y: rng.gen::<f32>() * 600.0,
+                    })
+                    .add_component(VelocityComponent {
+                        x_vel: rng.gen::<f32>() * 2.0 - 1.0,
+                        y_vel: rng.gen::<f32>() * 2.0 - 1.0,
+                    })
+                    .add_component(DrawComponent {}),
+            );
+        }
     }
 }
 
@@ -111,8 +100,8 @@ impl System for RenderSystem {
                         .dest_rect(graphics::Rect {
                             x: position.read().unwrap().x,
                             y: position.read().unwrap().y,
-                            w: 50.0,
-                            h: 50.0,
+                            w: 10.0,
+                            h: 10.0,
                         })
                         .color([0.0, 0.0, 0.0, 1.0]),
                 );
