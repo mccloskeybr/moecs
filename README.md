@@ -1,5 +1,7 @@
 # moecs
 
+![Build Status](https://github.com/mccloskeybr/moecs/workflows/CI/badge.svg)
+
 `moecs` (_micro ECS_) is a small ECS library written in Rust.
 
 Built to be used with lightweight Rust-based game engines, like [ggez](https://github.com/ggez/ggez).
