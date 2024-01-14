@@ -10,7 +10,7 @@ pub struct ComponentBundle {
 }
 
 impl ComponentBundle {
-    pub fn add_component<T: 'static + Component>(&mut self, component: T) -> &mut ComponentBundle {
+    pub fn add_component<T: 'static + Component>(mut self, component: T) -> ComponentBundle {
         self.components.push(Arc::new(RwLock::new(component)));
         self
     }

@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::{Arc, RwLock};
 
 use crate::entity::EntityManager;
 use crate::system::{SystemGroup, SystemManager, SystemParamAccessor};
@@ -14,7 +15,7 @@ use crate::system::{SystemGroup, SystemManager, SystemParamAccessor};
 /// registered.
 #[derive(Default)]
 pub struct Engine {
-    entity_manager: EntityManager,
+    entity_manager: Arc<RwLock<EntityManager>>,
     system_manager: SystemManager,
     next_group_id: u32,
     system_groups: HashMap<u32, SystemGroup>,
@@ -37,12 +38,12 @@ impl Engine {
 
     /// Executes a `SystemGroup` registered under the provided `group_id`, passing the `SystemParams`
     /// registered in the `SystemParamAccessor`.
-    pub fn execute_group(&mut self, group_id: u32, params: &SystemParamAccessor) {
+    pub fn execute_group(&mut self, group_id: u32, params: SystemParamAccessor) {
         match self.system_groups.get(&group_id) {
             None => panic!("SystemGroup with id: {} not registered!", group_id),
             Some(group) => {
                 self.system_manager
-                    .execute_group(group, &mut self.entity_manager, params)
+                    .execute_group(group, self.entity_manager.clone(), Arc::new(params))
             }
         }
     }

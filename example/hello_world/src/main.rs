@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
+use std::sync::{Arc, RwLock};
+
 use moecs::component::{Component, ComponentBundle};
 use moecs::entity::{EntityManager, Query};
 use moecs::system::{System, SystemGroup, SystemParamAccessor};
@@ -21,9 +23,15 @@ struct VelocityComponent {
 #[derive(System)]
 struct PhysicsSystem;
 impl System for PhysicsSystem {
-    fn execute(entity_manager: &mut EntityManager, params: &SystemParamAccessor) {
+    fn execute(entity_manager: Arc<RwLock<EntityManager>>, params: Arc<SystemParamAccessor>) {
         entity_manager
-            .filter(Query::default().with::<PositionComponent>().with::<VelocityComponent>())
+            .read()
+            .unwrap()
+            .filter(
+                Query::default()
+                    .with::<PositionComponent>()
+                    .with::<VelocityComponent>(),
+            )
             .iter()
             .for_each(|result| {
                 let position = result.get_component::<PositionComponent>().unwrap();
@@ -32,7 +40,11 @@ impl System for PhysicsSystem {
                 position.write().unwrap().x += velocity.read().unwrap().x_vel;
                 position.write().unwrap().y += velocity.read().unwrap().y_vel;
 
-                println!("Entity: {} has position: {:?}", result.entity_id(), position);
+                println!(
+                    "Entity: {} has position: {:?}",
+                    result.entity_id(),
+                    position
+                );
             });
     }
 }
@@ -40,13 +52,13 @@ impl System for PhysicsSystem {
 #[derive(System)]
 struct CreateEntitiesSystem;
 impl System for CreateEntitiesSystem {
-    fn execute(entity_manager: &mut EntityManager, params: &SystemParamAccessor) {
-        entity_manager.create_entity(
+    fn execute(entity_manager: Arc<RwLock<EntityManager>>, params: Arc<SystemParamAccessor>) {
+        entity_manager.write().unwrap().create_entity(
             ComponentBundle::default()
                 .add_component(PositionComponent { x: 0, y: 0 })
                 .add_component(VelocityComponent { x_vel: 2, y_vel: 1 }),
         );
-        entity_manager.create_entity(
+        entity_manager.write().unwrap().create_entity(
             ComponentBundle::default()
                 .add_component(PositionComponent { x: 0, y: 0 })
                 .add_component(VelocityComponent {
@@ -60,15 +72,16 @@ impl System for CreateEntitiesSystem {
 fn main() {
     let mut engine = Engine::default();
     let startup_systems = engine.register_system_group(
-        SystemGroup::default()
-            .register::<CreateEntitiesSystem>()
-            .clone(),
+        SystemGroup::new_sequential_group()
+            .register::<CreateEntitiesSystem>(),
     );
-    engine.execute_group(startup_systems, &SystemParamAccessor::default());
+    engine.execute_group(startup_systems, SystemParamAccessor::default());
 
-    let update_systems =
-        engine.register_system_group(SystemGroup::default().register::<PhysicsSystem>().clone());
+    let update_systems = engine.register_system_group(
+        SystemGroup::new_sequential_group()
+            .register::<PhysicsSystem>(),
+    );
     for i in 0..5 {
-        engine.execute_group(update_systems, &SystemParamAccessor::default());
+        engine.execute_group(update_systems, SystemParamAccessor::default());
     }
 }

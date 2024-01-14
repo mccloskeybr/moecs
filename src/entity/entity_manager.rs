@@ -18,7 +18,7 @@ impl EntityManager {
     /// Returns a `u32` representing that Entity's id.
     ///
     /// Will panic if registering multiple `Component`s of the same type is attempted.
-    pub fn create_entity(&mut self, components: &ComponentBundle) -> u32 {
+    pub fn create_entity(&mut self, components: ComponentBundle) -> u32 {
         let entity_id = self.next_entity_id;
         self.next_entity_id += 1;
         self.entity_id_to_component_ids
@@ -41,7 +41,7 @@ impl EntityManager {
     /// Adds all specified `Component`s to the Entity with the associated `entity_id`.
     ///
     /// Will panic if registering multiple `Component`s of the same type is attempted.
-    pub fn add_components_to_entity(&mut self, entity_id: &u32, components: &ComponentBundle) {
+    pub fn add_components_to_entity(&mut self, entity_id: &u32, components: ComponentBundle) {
         components.get_components().iter().for_each(|component| {
             let component_id: u64 = component.read().unwrap().self_property_id();
             self.entity_id_to_component_ids
@@ -79,7 +79,7 @@ impl EntityManager {
     /// Executes a `Query` over all Entities. Returns a vector of `QueryResult`s.
     /// This is generally how one finds all Entities with a specific `Component` type, for example.
     /// Queries execution is parallelized.
-    pub fn filter(&self, query: &Query) -> Vec<QueryResult> {
+    pub fn filter(&self, query: Query) -> Vec<QueryResult> {
         let mut entities: HashSet<u32> = self.entity_id_to_component_ids.keys().copied().collect();
         entities = entities
             .par_iter()

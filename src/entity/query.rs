@@ -10,12 +10,12 @@ pub struct Query {
 }
 
 impl Query {
-    pub fn with<T: 'static + Component>(&mut self) -> &mut Query {
+    pub fn with<T: 'static + Component>(mut self) -> Query {
         self.with_components.push(T::property_id());
         self
     }
 
-    pub fn without<T: 'static + Component>(&mut self) -> &mut Query {
+    pub fn without<T: 'static + Component>(mut self) -> Query {
         self.without_components.push(T::property_id());
         self
     }

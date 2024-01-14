@@ -2,6 +2,7 @@ use ggez::event;
 use ggez::glam::*;
 use ggez::graphics;
 use ggez::{Context, GameResult};
+use std::sync::{Arc, RwLock};
 
 use moecs::component::{Component, ComponentBundle};
 use moecs::entity::{EntityManager, Query};
@@ -26,8 +27,8 @@ struct DrawComponent {}
 #[derive(System)]
 struct CreateEntitiesSystem;
 impl System for CreateEntitiesSystem {
-    fn execute(entity_manager: &mut EntityManager, _params: &SystemParamAccessor) {
-        entity_manager.create_entity(
+    fn execute(entity_manager: Arc<RwLock<EntityManager>>, _params: Arc<SystemParamAccessor>) {
+        entity_manager.write().unwrap().create_entity(
             ComponentBundle::default()
                 .add_component(PositionComponent { x: 0.0, y: 0.0 })
                 .add_component(VelocityComponent {
@@ -36,7 +37,7 @@ impl System for CreateEntitiesSystem {
                 })
                 .add_component(DrawComponent {}),
         );
-        entity_manager.create_entity(
+        entity_manager.write().unwrap().create_entity(
             ComponentBundle::default()
                 .add_component(PositionComponent { x: 200.0, y: 50.0 })
                 .add_component(VelocityComponent {
@@ -45,7 +46,7 @@ impl System for CreateEntitiesSystem {
                 })
                 .add_component(DrawComponent {}),
         );
-        entity_manager.create_entity(
+        entity_manager.write().unwrap().create_entity(
             ComponentBundle::default()
                 .add_component(PositionComponent { x: 175.0, y: 200.0 })
                 .add_component(VelocityComponent {
@@ -60,9 +61,15 @@ impl System for CreateEntitiesSystem {
 #[derive(System)]
 struct PhysicsSystem;
 impl System for PhysicsSystem {
-    fn execute(entity_manager: &mut EntityManager, _params: &SystemParamAccessor) {
+    fn execute(entity_manager: Arc<RwLock<EntityManager>>, _params: Arc<SystemParamAccessor>) {
         entity_manager
-            .filter(Query::default().with::<PositionComponent>().with::<VelocityComponent>())
+            .read()
+            .unwrap()
+            .filter(
+                Query::default()
+                    .with::<PositionComponent>()
+                    .with::<VelocityComponent>(),
+            )
             .iter()
             .for_each(|result| {
                 let position = result.get_component::<PositionComponent>().unwrap();
@@ -81,13 +88,19 @@ struct CanvasParam<'a> {
 #[derive(System)]
 struct RenderSystem;
 impl System for RenderSystem {
-    fn execute(entity_manager: &mut EntityManager, params: &SystemParamAccessor) {
+    fn execute(entity_manager: Arc<RwLock<EntityManager>>, params: Arc<SystemParamAccessor>) {
         let canvas_param = params.get_param::<CanvasParam>().unwrap();
-        let canvas_param = &mut canvas_param.borrow_mut();
+        let canvas_param = &mut canvas_param.write().unwrap();
         let canvas = &mut canvas_param.canvas;
 
         entity_manager
-            .filter(Query::default().with::<PositionComponent>().with::<DrawComponent>())
+            .read()
+            .unwrap()
+            .filter(
+                Query::default()
+                    .with::<PositionComponent>()
+                    .with::<DrawComponent>(),
+            )
             .iter()
             .for_each(|result| {
                 let position = result.get_component::<PositionComponent>().unwrap();
@@ -117,16 +130,14 @@ impl GameState {
     fn new() -> GameResult<GameState> {
         let mut engine = Engine::default();
         let startup_systems = engine.register_system_group(
-            SystemGroup::default()
-                .register::<CreateEntitiesSystem>()
-                .clone(),
+            SystemGroup::new_sequential_group().register::<CreateEntitiesSystem>(),
         );
-        engine.execute_group(startup_systems, &SystemParamAccessor::default());
+        engine.execute_group(startup_systems, SystemParamAccessor::default());
 
         let logic_systems = engine
-            .register_system_group(SystemGroup::default().register::<PhysicsSystem>().clone());
-        let render_systems =
-            engine.register_system_group(SystemGroup::default().register::<RenderSystem>().clone());
+            .register_system_group(SystemGroup::new_sequential_group().register::<PhysicsSystem>());
+        let render_systems = engine
+            .register_system_group(SystemGroup::new_parallel_group().register::<RenderSystem>());
 
         Ok(GameState {
             engine,
@@ -139,7 +150,7 @@ impl GameState {
 impl event::EventHandler<ggez::GameError> for GameState {
     fn update(&mut self, _ctx: &mut Context) -> GameResult {
         self.engine
-            .execute_group(self.logic_systems, &SystemParamAccessor::default());
+            .execute_group(self.logic_systems, SystemParamAccessor::default());
         Ok(())
     }
 

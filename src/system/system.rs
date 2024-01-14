@@ -1,5 +1,7 @@
 pub use moecs_macros::System;
 
+use std::sync::{Arc, RwLock};
+
 use crate::entity::EntityManager;
 use crate::system::SystemParamAccessor;
 use crate::util::PropertyId;
@@ -10,6 +12,5 @@ use crate::util::PropertyId;
 ///
 /// Note: All user-defined `SystemParam`s must derive this trait via `#[derive(System)]`.
 pub trait System: PropertyId {
-    /// The entry point for any `System`. This is invoked sequentially.
-    fn execute(entity_manager: &mut EntityManager, params: &SystemParamAccessor);
+    fn execute(entity_manager: Arc<RwLock<EntityManager>>, params: Arc<SystemParamAccessor>);
 }
