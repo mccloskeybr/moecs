@@ -27,13 +27,7 @@ pub fn derive_component(input: TokenStream) -> TokenStream {
             }
 
             fn self_property_id(&self) -> u64 {
-                use ::std::hash::{Hash, Hasher};
-                use ::std::collections::hash_map::DefaultHasher;
-
-                let key = format!("{}::{}", module_path!(), #name_string);
-                let mut hasher = DefaultHasher::new();
-                key.hash(&mut hasher);
-                hasher.finish()
+                Self::property_id()
             }
         }
     })
@@ -61,13 +55,7 @@ pub fn derive_system(input: TokenStream) -> TokenStream {
             }
 
             fn self_property_id(&self) -> u64 {
-                use std::hash::{Hash, Hasher};
-                use std::collections::hash_map::DefaultHasher;
-
-                let key = format!("{}::{}", module_path!(), #name_string);
-                let mut hasher = DefaultHasher::new();
-                key.hash(&mut hasher);
-                hasher.finish()
+                Self::property_id()
             }
         }
     })
@@ -96,13 +84,7 @@ pub fn derive_system_param(input: TokenStream) -> TokenStream {
             }
 
             fn self_property_id(&self) -> u64 {
-                use ::std::hash::{Hash, Hasher};
-                use ::std::collections::hash_map::DefaultHasher;
-
-                let key = format!("{}::{}", module_path!(), #name_string);
-                let mut hasher = DefaultHasher::new();
-                key.hash(&mut hasher);
-                hasher.finish()
+                Self::property_id()
             }
         }
     })

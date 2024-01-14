@@ -29,7 +29,7 @@ struct DrawComponent {}
 struct CreateEntitiesSystem;
 impl System for CreateEntitiesSystem {
     fn execute(entity_manager: Arc<RwLock<EntityManager>>, _params: Arc<SystemParamAccessor>) {
-        for _ in 0..1_000 {
+        for _ in 0..100 {
             let mut rng = rand::thread_rng();
             entity_manager.write().unwrap().create_entity(
                 ComponentBundle::default()

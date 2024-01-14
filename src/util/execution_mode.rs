@@ -1,5 +1,5 @@
 /// Used internally to differentiate between various configurable execution modes.
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum ExecutionMode {
     Sequential,
     Parallel,

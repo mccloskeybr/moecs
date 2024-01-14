@@ -21,7 +21,7 @@ unsafe impl Send for SystemParamAccessor<'_> {}
 unsafe impl Sync for SystemParamAccessor<'_> {}
 
 impl<'a> SystemParamAccessor<'a> {
-    pub fn add_param<'b, T: 'a + SystemParam>(
+    pub fn add_param<T: 'a + SystemParam>(
         mut self,
         param: T,
     ) -> SystemParamAccessor<'a> {

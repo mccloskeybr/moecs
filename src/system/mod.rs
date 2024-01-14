@@ -2,6 +2,7 @@ mod system;
 mod system_manager;
 mod system_param;
 mod system_group;
+mod test;
 
 pub use self::system::*;
 pub use self::system_param::*;
