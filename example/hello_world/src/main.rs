@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use moecs::component::Component;
-use moecs::entity::{EntityBuilder, EntityManager, Query};
+use moecs::component::{Component, ComponentBundle};
+use moecs::entity::{EntityManager, Query};
 use moecs::system::{System, SystemGroup, SystemParamAccessor};
 use moecs::Engine;
 
@@ -42,12 +42,12 @@ struct CreateEntitiesSystem;
 impl System for CreateEntitiesSystem {
     fn execute(entity_manager: &mut EntityManager, params: &SystemParamAccessor) {
         entity_manager.create_entity(
-            EntityBuilder::default()
+            ComponentBundle::default()
                 .add_component(PositionComponent { x: 0, y: 0 })
                 .add_component(VelocityComponent { x_vel: 2, y_vel: 1 }),
         );
         entity_manager.create_entity(
-            EntityBuilder::default()
+            ComponentBundle::default()
                 .add_component(PositionComponent { x: 0, y: 0 })
                 .add_component(VelocityComponent {
                     x_vel: -1,

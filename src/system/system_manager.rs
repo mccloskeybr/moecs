@@ -4,8 +4,10 @@ use crate::system::{SystemGroup, SystemParamAccessor};
 #[derive(Default)]
 pub struct SystemManager;
 
+/// The `SystemManager` is simply responsible for executing all of the `System`s in the provided
+/// `SystemGroup`.
 impl SystemManager {
-    pub fn execute_group(
+    pub(crate) fn execute_group(
         &self,
         group: &SystemGroup,
         entity_manager: &mut EntityManager,

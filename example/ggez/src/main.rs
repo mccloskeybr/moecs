@@ -3,8 +3,8 @@ use ggez::glam::*;
 use ggez::graphics;
 use ggez::{Context, GameResult};
 
-use moecs::component::Component;
-use moecs::entity::{EntityBuilder, EntityManager, Query};
+use moecs::component::{Component, ComponentBundle};
+use moecs::entity::{EntityManager, Query};
 use moecs::system::{System, SystemGroup, SystemParam, SystemParamAccessor};
 use moecs::Engine;
 
@@ -28,7 +28,7 @@ struct CreateEntitiesSystem;
 impl System for CreateEntitiesSystem {
     fn execute(entity_manager: &mut EntityManager, _params: &SystemParamAccessor) {
         entity_manager.create_entity(
-            EntityBuilder::default()
+            ComponentBundle::default()
                 .add_component(PositionComponent { x: 0.0, y: 0.0 })
                 .add_component(VelocityComponent {
                     x_vel: 0.5,
@@ -37,7 +37,7 @@ impl System for CreateEntitiesSystem {
                 .add_component(DrawComponent {}),
         );
         entity_manager.create_entity(
-            EntityBuilder::default()
+            ComponentBundle::default()
                 .add_component(PositionComponent { x: 200.0, y: 50.0 })
                 .add_component(VelocityComponent {
                     x_vel: -0.5,
@@ -46,7 +46,7 @@ impl System for CreateEntitiesSystem {
                 .add_component(DrawComponent {}),
         );
         entity_manager.create_entity(
-            EntityBuilder::default()
+            ComponentBundle::default()
                 .add_component(PositionComponent { x: 175.0, y: 200.0 })
                 .add_component(VelocityComponent {
                     x_vel: -0.2,

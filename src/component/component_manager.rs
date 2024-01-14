@@ -3,6 +3,8 @@ use std::sync::{Arc, RwLock};
 
 use crate::component::Component;
 
+/// A `ComponentManager` is a collection of *all* `Component`s of a single type. Each `Entity` with
+/// an instance of the relevant `Component` is tracked.
 pub struct ComponentManager<T: Component + ?Sized> {
     entity_id_to_component: HashMap<u32, Arc<RwLock<T>>>,
 }

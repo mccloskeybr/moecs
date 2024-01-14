@@ -6,8 +6,13 @@ use std::rc::Rc;
 
 use crate::util::PropertyId;
 
+/// A `SystemParam` can be used to pass external data into a `System`. For example, a render
+/// canvas, delta time, input processing information, etc.
+///
+/// Note: All user-defined `SystemParam`s must derive this trait via `#[derive(SystemParam)]`.
 pub trait SystemParam: PropertyId {}
 
+/// Stores and provides access to a collection of `SystemParam`s.
 #[derive(Default)]
 pub struct SystemParamAccessor<'a> {
     param_id_to_param: HashMap<u64, Rc<RefCell<dyn 'a + SystemParam>>>,
