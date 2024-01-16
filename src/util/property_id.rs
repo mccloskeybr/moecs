@@ -2,7 +2,11 @@
 /// Useful when a given implementation does not have a `static` lifetime (e.g. `SystemParam`s).
 pub trait PropertyId {
     fn property_id() -> u64
-        where Self: Sized;
-
+    where
+        Self: Sized;
+    fn property_string() -> &'static str
+    where
+        Self: Sized;
     fn self_property_id(&self) -> u64;
+    fn self_property_string(&self) -> &'static str;
 }

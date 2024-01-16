@@ -1,3 +1,5 @@
+extern crate self as moecs;
+
 mod engine;
 mod test;
 

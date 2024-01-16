@@ -5,17 +5,8 @@ use std::sync::{Arc, RwLock};
 use crate::component::*;
 use crate::util::PropertyId;
 
-#[derive(Debug)]
+#[derive(Component)]
 struct TestComponent;
-impl PropertyId for TestComponent {
-    fn property_id() -> u64 {
-        123
-    }
-    fn self_property_id(&self) -> u64 {
-        Self::property_id()
-    }
-}
-impl Component for TestComponent {}
 
 #[test]
 fn component_bundle_success() {

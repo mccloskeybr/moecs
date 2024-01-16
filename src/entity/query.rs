@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 
 use crate::component::Component;
 
-#[derive(Default, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Hash)]
 pub struct Query {
     with_components: Vec<u64>,
     without_components: Vec<u64>,

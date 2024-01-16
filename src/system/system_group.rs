@@ -40,7 +40,10 @@ impl SystemGroup {
     pub fn register<T: 'static + System>(mut self) -> SystemGroup {
         let system_id = T::property_id();
         if self.system_id_to_system.contains_key(&system_id) {
-            panic!("System {} already registered!", system_id);
+            panic!(
+                "System: {} already registered for SystemGroup!",
+                T::property_string()
+            );
         }
         self.system_id_to_system.insert(system_id, T::execute);
         self

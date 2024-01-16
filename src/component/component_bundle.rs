@@ -24,7 +24,7 @@ impl ComponentBundle {
         if self.components.contains_key(&T::property_id()) {
             panic!(
                 "Component {} cannot be registered more than once per Entity!",
-                &T::property_id()
+                &T::property_string()
             );
         }
 

@@ -27,7 +27,10 @@ impl QueryCache {
     /// Note: will panic if the `Query` is already represented.
     pub fn add_to_cache(&mut self, entry: (Query, Vec<QueryResult>)) {
         if self.query_cache.contains_key(&entry.0) {
-            panic!("Query cache already contains the provided query!");
+            panic!(
+                "Query cache already contains the provided Query: {:?}!",
+                entry.0
+            );
         }
         self.query_cache.insert(entry.0, entry.1);
     }

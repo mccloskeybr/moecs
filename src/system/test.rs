@@ -7,31 +7,14 @@ use crate::system::*;
 use crate::util::ExecutionMode::*;
 use crate::util::PropertyId;
 
-#[derive(Debug)]
+#[derive(System)]
 struct TestSystem;
 impl System for TestSystem {
     fn execute(_entity_manager: Arc<RwLock<EntityManager>>, _params: Arc<SystemParamAccessor>) {}
 }
-impl PropertyId for TestSystem {
-    fn property_id() -> u64 {
-        123
-    }
-    fn self_property_id(&self) -> u64 {
-        Self::property_id()
-    }
-}
 
-#[derive(Debug)]
+#[derive(SystemParam)]
 struct TestParam;
-impl SystemParam for TestParam {}
-impl PropertyId for TestParam {
-    fn property_id() -> u64 {
-        456
-    }
-    fn self_property_id(&self) -> u64 {
-        Self::property_id()
-    }
-}
 
 #[test]
 fn system_group_sequential_success() {

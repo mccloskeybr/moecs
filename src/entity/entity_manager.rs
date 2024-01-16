@@ -65,8 +65,9 @@ impl EntityManager {
                     .map(|component_ids| {
                         if component_ids.contains(component_id) {
                             panic!(
-                                "Component {} already registered for entity {}!",
-                                component_id, entity_id
+                                "Component: {} already registered for Entity: {}!",
+                                component.read().unwrap().self_property_string(),
+                                entity_id
                             );
                         }
                         component_ids.insert(*component_id)

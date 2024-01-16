@@ -6,29 +6,11 @@ use crate::component::{Component, ComponentBundle};
 use crate::entity::*;
 use crate::util::PropertyId;
 
-#[derive(Debug)]
+#[derive(Component)]
 struct TestComponent;
-impl PropertyId for TestComponent {
-    fn property_id() -> u64 {
-        123
-    }
-    fn self_property_id(&self) -> u64 {
-        Self::property_id()
-    }
-}
-impl Component for TestComponent {}
 
-#[derive(Debug)]
+#[derive(Component)]
 struct OtherTestComponent;
-impl PropertyId for OtherTestComponent {
-    fn property_id() -> u64 {
-        456
-    }
-    fn self_property_id(&self) -> u64 {
-        Self::property_id()
-    }
-}
-impl Component for OtherTestComponent {}
 
 #[test]
 fn query_with_success() {
