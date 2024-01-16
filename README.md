@@ -15,10 +15,15 @@ See example implementations [here](./example).
 ## Features
 
 *   Simple user-facing API.
+*   Entity query caching for efficient repeat lookups.
 *   Configurable parallelism (powered by
-    [rayon](https://github.com/rayon-rs/rayon)).
+    [rayon](https://github.com/rayon-rs/rayon)):
+    *   Entity queries are run in parallel (when not cached).
+    *   System execution can be configured to run in parallel.
+    *   System parameters are wrapped in `Arc<RwLock>`, so parallelism can
+        easily be achieved within a `System` as well.
 
-## Usage
+## Documentation
 
 ### Components
 
@@ -59,7 +64,7 @@ Dog example, we can group the `PositionComponent` and `DogStateComponent`s
 using the following:
 
 ```rust
-let bundle = ComponentBundle::default()
+let bundle = ComponentBundle::new()
     .add_component(PositionComponent {
         x: 0,
         y: 0,
@@ -74,7 +79,7 @@ let bundle = ComponentBundle::default()
 #### EntityManager
 
 As discussed in the Component section, Entities are simply bundles of relevant
-Components. Operations on Entities are done via the `EntityManager`..
+Components. Operations on Entities are done via the `EntityManager`.
 
 Note: The `EntityManager` is passed directly to defined `System`s. Therefore,
 all Entity-related mutations can only occur in a `System`.
@@ -94,7 +99,7 @@ broken.
 
 ```rust
 entity_manager.create_entity(
-    ComponentBundle::default()
+    ComponentBundle::new()
         .add_component(PositionComponent { x: 0, y: 0 })
 );
 ```
@@ -115,7 +120,7 @@ Additional `Component`s can be added to an existing Entity via:
 ```rust
 entity_manager.add_components_to_entity(
     &entity_id,
-    ComponentBundle::default()
+    ComponentBundle::new()
         .add_component(VelocityComponent { x_vel: 0, y_vel: 0 })
 );
 ```
@@ -141,20 +146,20 @@ all registered Entities in order to filter out Entities *with* a certain
 Query results are returned via a `QueryResult` struct, which includes the
 Entity id of the filtered Entity, as well as the relevant `Component`s.
 
-Note: query processing is performed in parallel. Caching query results may or
-may not be implemented in the future.
+Note: Query results are automatically cached. Additionally, query processing is
+performed in parallel (across registered Entities) to improve efficiency.
 
 Example (simplified) flow:
 
 ```rust
 entity_manager
     .filter(
-        Query::default()
+        Query::new()
             .with::<SomeComponent>()
             .without::<SomeOtherComponent>(),
     )
     .iter()
-    .for_each(|result| {
+    .for_each(|result: QueryResult| {
         let component = result.get_component::<SomeComponent>();
         println!(
             "Entity: {} has component {:?}.",
@@ -182,12 +187,13 @@ impl System for PhysicsSystem {
             .read()
             .unwrap()
             .filter(
-                Query::default()
+                Query::new()
                     .with::<PositionComponent>()
                     .with::<VelocityComponent>(),
             )
             .iter()
             .for_each(|result| {
+                let entity_id = result.entity_id();
                 let position = result.get_component::<PositionComponent>().unwrap();
                 let velocity = result.get_component::<VelocityComponent>().unwrap();
 
@@ -252,6 +258,10 @@ let group_1 = SystemGroup::new_sequential_group()
 let group_2 = SystemGroup::new_parallel_group().register::<RenderSystem>();
 ```
 
+Parallelism here is horizontal. That is, the `System`s themselves are run in
+parallel with each other. Parallelism *within* a `System` is done separatetely
+(manually).
+
 ### Engine
 
 The `Engine` is how `moecs` is interacted with by some outside process (i.e.
@@ -263,7 +273,7 @@ some central game loop). It has the following responsibilities:
 The general flow is as follows:
 
 *   Upon program start up, define and group `System`s of similar type using
-    `SystemGroup`s (discussed futher below).
+    `SystemGroup`s (discussed above).
 *   Then, in the main loop, execute the `SystemGroup`s in some sequential
     manner.
 
@@ -271,7 +281,7 @@ A basic example:
 
 ```rust
 fn main() {
-    let mut engine = Engine::default();
+    let mut engine = Engine::new();
 
     let update_systems = engine.register_system_group(
         SystemGroup::new_sequential_group()
@@ -283,8 +293,8 @@ fn main() {
     );
 
     loop {
-        engine.execute_group(update_systems, SystemParamAccessor::default());
-        engine.execute_group(render_systems, SystemParamAccessor::default());
+        engine.execute_group(update_systems, SystemParamAccessor::new());
+        engine.execute_group(render_systems, SystemParamAccessor::new());
     }
 }
 ```

@@ -22,6 +22,15 @@ pub struct Engine {
 }
 
 impl Engine {
+    pub fn new() -> Self {
+        Engine {
+            entity_manager: Arc::new(RwLock::new(EntityManager::new())),
+            system_manager: SystemManager::new(),
+            next_group_id: 0,
+            system_groups: HashMap::new(),
+        }
+    }
+
     /// Registeres a provided `SystemGroup`. Returns a `u32` representing the `id` of the provided
     /// `SystemGroup`, for reference during execution.
     pub fn register_system_group(&mut self, group: SystemGroup) -> u32 {
@@ -46,5 +55,11 @@ impl Engine {
                     .execute_group(group, self.entity_manager.clone(), Arc::new(params))
             }
         }
+    }
+
+    /// Resets all data held by the Engine, including registered SystemGroups, the EntityManager,
+    /// etc.
+    pub fn reset(&mut self) {
+        *self = Engine::new();
     }
 }

@@ -54,7 +54,7 @@ fn system_group_parallel_success() {
 
 #[test]
 fn system_param_accessor_success() {
-    let accessor = SystemParamAccessor::default().add_param(TestParam);
+    let accessor = SystemParamAccessor::new().add_param(TestParam);
     assert!(accessor.get_param::<TestParam>().is_some());
 }
 
@@ -62,8 +62,8 @@ fn system_param_accessor_success() {
 fn system_manager_sequential_success() {
     SystemManager.execute_group(
         &SystemGroup::new_sequential_group().register::<TestSystem>(),
-        Arc::new(RwLock::new(EntityManager::default())),
-        Arc::new(SystemParamAccessor::default()),
+        Arc::new(RwLock::new(EntityManager::new())),
+        Arc::new(SystemParamAccessor::new()),
     );
 }
 
@@ -71,7 +71,7 @@ fn system_manager_sequential_success() {
 fn system_manager_parallel_success() {
     SystemManager.execute_group(
         &SystemGroup::new_parallel_group().register::<TestSystem>(),
-        Arc::new(RwLock::new(EntityManager::default())),
-        Arc::new(SystemParamAccessor::default()),
+        Arc::new(RwLock::new(EntityManager::new())),
+        Arc::new(SystemParamAccessor::new()),
     );
 }

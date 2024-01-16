@@ -19,15 +19,26 @@ impl Component for TestComponent {}
 
 #[test]
 fn component_bundle_success() {
-    let bundle = ComponentBundle::default().add_component(TestComponent);
+    let bundle = ComponentBundle::new().add_component(TestComponent);
 
     assert_eq!(bundle.get_components().len(), 1);
 
-    let component = bundle.get_components().first().unwrap();
+    let component = bundle
+        .get_components()
+        .get(&TestComponent::property_id())
+        .unwrap();
     assert_eq!(
         component.read().unwrap().self_property_id(),
         TestComponent::property_id()
     );
+}
+
+#[test]
+#[should_panic]
+fn component_bundle_multiple_same_component_panics() {
+    ComponentBundle::new()
+        .add_component(TestComponent)
+        .add_component(TestComponent);
 }
 
 #[test]

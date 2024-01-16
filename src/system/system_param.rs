@@ -18,9 +18,16 @@ pub struct SystemParamAccessor<'a> {
 }
 
 unsafe impl Send for SystemParamAccessor<'_> {}
+
 unsafe impl Sync for SystemParamAccessor<'_> {}
 
 impl<'a> SystemParamAccessor<'a> {
+    pub fn new() -> Self {
+        SystemParamAccessor {
+            param_id_to_param: HashMap::new(),
+        }
+    }
+
     pub fn add_param<T: 'a + SystemParam>(
         mut self,
         param: T,

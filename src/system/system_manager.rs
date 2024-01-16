@@ -11,6 +11,10 @@ pub struct SystemManager;
 /// The `SystemManager` is simply responsible for executing all of the `System`s in the provided
 /// `SystemGroup`.
 impl SystemManager {
+    pub fn new() -> Self {
+        SystemManager
+    }
+
     pub(crate) fn execute_group(
         &self,
         group: &SystemGroup,

@@ -32,7 +32,7 @@ impl System for CreateEntitiesSystem {
         for _ in 0..100 {
             let mut rng = rand::thread_rng();
             entity_manager.write().unwrap().create_entity(
-                ComponentBundle::default()
+                ComponentBundle::new()
                     .add_component(PositionComponent {
                         x: rng.gen::<f32>() * 800.0,
                         y: rng.gen::<f32>() * 600.0,
@@ -55,7 +55,7 @@ impl System for PhysicsSystem {
             .read()
             .unwrap()
             .filter(
-                Query::default()
+                Query::new()
                     .with::<PositionComponent>()
                     .with::<VelocityComponent>(),
             )
@@ -86,7 +86,7 @@ impl System for RenderSystem {
             .read()
             .unwrap()
             .filter(
-                Query::default()
+                Query::new()
                     .with::<PositionComponent>()
                     .with::<DrawComponent>(),
             )
@@ -117,11 +117,11 @@ struct GameState {
 
 impl GameState {
     fn new() -> GameResult<GameState> {
-        let mut engine = Engine::default();
+        let mut engine = Engine::new();
         let startup_systems = engine.register_system_group(
             SystemGroup::new_sequential_group().register::<CreateEntitiesSystem>(),
         );
-        engine.execute_group(startup_systems, SystemParamAccessor::default());
+        engine.execute_group(startup_systems, SystemParamAccessor::new());
 
         let logic_systems = engine
             .register_system_group(SystemGroup::new_sequential_group().register::<PhysicsSystem>());
@@ -139,7 +139,7 @@ impl GameState {
 impl event::EventHandler<ggez::GameError> for GameState {
     fn update(&mut self, _ctx: &mut Context) -> GameResult {
         self.engine
-            .execute_group(self.logic_systems, SystemParamAccessor::default());
+            .execute_group(self.logic_systems, SystemParamAccessor::new());
         Ok(())
     }
 
@@ -148,7 +148,7 @@ impl event::EventHandler<ggez::GameError> for GameState {
             graphics::Canvas::from_frame(context, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
         self.engine.execute_group(
             self.render_systems,
-            SystemParamAccessor::default().add_param(CanvasParam {
+            SystemParamAccessor::new().add_param(CanvasParam {
                 canvas: &mut canvas,
             }),
         );

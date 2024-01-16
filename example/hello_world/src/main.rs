@@ -28,7 +28,7 @@ impl System for PhysicsSystem {
             .read()
             .unwrap()
             .filter(
-                Query::default()
+                Query::new()
                     .with::<PositionComponent>()
                     .with::<VelocityComponent>(),
             )
@@ -54,12 +54,12 @@ struct CreateEntitiesSystem;
 impl System for CreateEntitiesSystem {
     fn execute(entity_manager: Arc<RwLock<EntityManager>>, params: Arc<SystemParamAccessor>) {
         entity_manager.write().unwrap().create_entity(
-            ComponentBundle::default()
+            ComponentBundle::new()
                 .add_component(PositionComponent { x: 0, y: 0 })
                 .add_component(VelocityComponent { x_vel: 2, y_vel: 1 }),
         );
         entity_manager.write().unwrap().create_entity(
-            ComponentBundle::default()
+            ComponentBundle::new()
                 .add_component(PositionComponent { x: 0, y: 0 })
                 .add_component(VelocityComponent {
                     x_vel: -1,
@@ -70,18 +70,18 @@ impl System for CreateEntitiesSystem {
 }
 
 fn main() {
-    let mut engine = Engine::default();
+    let mut engine = Engine::new();
     let startup_systems = engine.register_system_group(
         SystemGroup::new_sequential_group()
             .register::<CreateEntitiesSystem>(),
     );
-    engine.execute_group(startup_systems, SystemParamAccessor::default());
+    engine.execute_group(startup_systems, SystemParamAccessor::new());
 
     let update_systems = engine.register_system_group(
         SystemGroup::new_sequential_group()
             .register::<PhysicsSystem>(),
     );
     for i in 0..5 {
-        engine.execute_group(update_systems, SystemParamAccessor::default());
+        engine.execute_group(update_systems, SystemParamAccessor::new());
     }
 }

@@ -3,13 +3,20 @@ use std::sync::{Arc, RwLock};
 
 use crate::component::Component;
 
-#[derive(Default)]
+#[derive(Default, Clone, Eq, PartialEq, Hash)]
 pub struct Query {
     with_components: Vec<u64>,
     without_components: Vec<u64>,
 }
 
 impl Query {
+    pub fn new() -> Self {
+        Query {
+            with_components: Vec::new(),
+            without_components: Vec::new(),
+        }
+    }
+
     pub fn with<T: 'static + Component>(mut self) -> Query {
         self.with_components.push(T::property_id());
         self
