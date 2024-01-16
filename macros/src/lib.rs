@@ -58,13 +58,17 @@ fn derive_property_id(input: TokenStream) -> TokenStream {
 
             fn property_id() -> u64
             where Self: Sized {
-                use ::std::hash::{Hash, Hasher};
                 use ::std::collections::hash_map::DefaultHasher;
+                use ::std::hash::{Hash, Hasher};
+                use ::std::sync::OnceLock;
 
-                let key = #name_literal::property_string();
-                let mut hasher = DefaultHasher::new();
-                key.hash(&mut hasher);
-                hasher.finish()
+                static HASH: OnceLock<u64> = OnceLock::new();
+                *HASH.get_or_init(|| {
+                    let key = #name_literal::property_string();
+                    let mut hasher = DefaultHasher::new();
+                    key.hash(&mut hasher);
+                    hasher.finish()
+                })
             }
 
             fn self_property_id(&self) -> u64 {
