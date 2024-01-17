@@ -55,10 +55,15 @@ impl QueryCache {
         }
 
         self.query_cache.iter_mut().for_each(|(query, results)| {
-            if all_components.get_components().keys().all(|component_id| {
-                query.get_with_components().contains(component_id)
-                    && !query.get_without_components().contains(component_id)
-            }) {
+            let contains_all_with = query
+                .get_with_components()
+                .iter()
+                .all(|component_id| all_components.get_components().contains_key(component_id));
+            let contains_any_without = query
+                .get_without_components()
+                .iter()
+                .any(|component_id| all_components.get_components().contains_key(component_id));
+            if contains_all_with && !contains_any_without {
                 let mut result = QueryResult::new(*entity_id);
                 query.get_with_components().iter().for_each(|component_id| {
                     result.add_component(
