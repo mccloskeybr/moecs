@@ -3,7 +3,7 @@ name = "moecs"
 description = "Micro ECS engine. A small and lightweight ECS engine for Rust projects."
 version = "0.1.0"
 repository = "https://github.com/mccloskeybr/moecs"
-keywords = ["moecs", "ecs", "game", "engine"]
+keywords = ["moecs", "ecs", "game"]
 authors = ["Brendan McCloskey <brendan.mccloskey@gmail.com>"]
 
 edition = "2021"
@@ -12,5 +12,5 @@ readme = "README.md"
 categories = ["game-development"]
 
 [dependencies]
-moecs_macros = { path = "macros" }
+moecs_macros = { path = "macros", version = "0.1.0" }
 rayon = "1.8.0"
